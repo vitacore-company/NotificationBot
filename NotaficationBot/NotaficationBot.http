@@ -1,0 +1,6 @@
+@NotaficationBot_HostAddress = http://192.168.20.25:5068
+
+GET {{NotaficationBot_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
