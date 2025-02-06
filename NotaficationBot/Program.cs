@@ -1,4 +1,4 @@
-using Microsoft.EntityFrameworkCore;
+п»їusing Microsoft.EntityFrameworkCore;
 using Microsoft.TeamFoundation.SourceControl.WebApi;
 using Microsoft.VisualStudio.Services.Common;
 using Microsoft.VisualStudio.Services.WebApi;
@@ -17,8 +17,8 @@ namespace NotificationsBot
     {
         public static void Main(string[] args)
         {
-            Uri uri = new Uri("https://tfs.dev.vitacore.ru/tfs");
-            VssConnection connection = new VssConnection(uri, new VssBasicCredential(string.Empty, "AzureDevopsToken"));
+            //Uri uri = new Uri("https://tfs.dev.vitacore.ru/tfs");
+            //VssConnection connection = new VssConnection(uri, new VssBasicCredential(string.Empty, "AzureDevopsToken"));
 
             var botBuilder = BotApplication.CreateBuilder(args);
             string connectionString = botBuilder.Configuration.GetConnectionString("DefaultConnection");
@@ -33,7 +33,6 @@ namespace NotificationsBot
                 .AddXmlSerializerFormatters();
             botBuilder.Services.AddEndpointsApiExplorer();
             botBuilder.Services.AddSwaggerGen();
-            botBuilder.Services.AddSingleton<GitHttpClient>(serviceProvider => connection.GetClient<GitHttpClient>());
             BotApplication bothost = botBuilder.Build();
             bothost.UseStateMachine();
             bothost.HandleCommand("/start", () => "Hello, World!");
@@ -50,7 +49,7 @@ namespace NotificationsBot
                     var result = usersDataService?.SaveNewUser(messageText, context.ChatId);
                     if (result == null)
                     {
-                        throw new NullReferenceException("Регистрация клиента недоступна");
+                        throw new NullReferenceException("Р РµРіРёСЃС‚СЂР°С†РёСЏ РєР»РёРµРЅС‚Р° РЅРµРґРѕСЃС‚СѓРїРЅР°");
                     }
                 }
                 catch (NullReferenceException ex)
@@ -59,10 +58,10 @@ namespace NotificationsBot
                 }
                 catch(Exception ex)
                 {
-                    return "Наелся и спит -_-";
+                    return "РќР°РµР»СЃСЏ Рё СЃРїРёС‚ -_-";
                 }
                 await context.DropState();
-                return "Все заебок";
+                return "Р’СЃРµ Р·Р°РµР±РѕРє";
             }).FilterState<RegisterState.AskLoginState>();
 
             if (bothost.WebApplicationAccessor.Environment.IsDevelopment())

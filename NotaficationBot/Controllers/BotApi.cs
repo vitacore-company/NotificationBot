@@ -11,16 +11,6 @@ namespace NotificationsBot.Controllers;
 [ApiController]
 public class BotApi : ControllerBase
 {
-    GitHttpClient gitHttpClient;
-    ITelegramBotClient ssssss;
-    AppContext _appContext;
-    public BotApi(GitHttpClient gitHttpClient, ITelegramBotClient ss, AppContext appContext)
-    {
-        this.gitHttpClient = gitHttpClient;
-        ssssss = ss;
-        _appContext = appContext;
-    }
-
     [HttpPost("xml_notafication")]
     [Consumes("application/xml")]
     public async Task Notafication([FromBody] XElement xElement)
