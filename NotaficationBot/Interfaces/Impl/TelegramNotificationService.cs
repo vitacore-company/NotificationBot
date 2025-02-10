@@ -102,7 +102,7 @@ public class TelegramNotificationService : INotificationService
     {
         List<User> users = _appContext.Users.Where(user => displayNames.Contains(user.Login)).ToList();
         if (users.Count == 0)
-            throw new NullReferenceException("Пользователи не найдены");
+            return new List<long>();
         return users.Select(user => user.ChatId).ToList();
     }
 

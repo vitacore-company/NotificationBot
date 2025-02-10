@@ -1,5 +1,5 @@
-﻿using MinimalTelegramBot.Builder;
-using NotificationsBot.Middleware;
+﻿using NotificationsBot.Middleware;
+using NotificationsBot.Models;
 
 namespace NotificationsBot
 {
@@ -9,11 +9,12 @@ namespace NotificationsBot
         {
             //Uri uri = new Uri("https://tfs.dev.vitacore.ru/tfs");
             //VssConnection connection = new VssConnection(uri, new VssBasicCredential(string.Empty, "AzureDevopsToken"));
-            BotApplicationBuilder botBuilder = BotApplication.CreateBuilder(args);
+            WebApplicationBuilder botBuilder = WebApplication.CreateBuilder(args);
 
             botBuilder.ConfigureApplicationBuilder();
+            
 
-            BotApplication bothost = botBuilder.Build();
+            WebApplication bothost = botBuilder.Build();
 
             bothost.ConfigureBotApplicationBuilder();
 
