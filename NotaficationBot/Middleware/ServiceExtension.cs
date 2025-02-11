@@ -27,7 +27,7 @@ public static class ServiceExtension
         services.AddHostedService<PollingService>();
 
 
-        services.AddHttpClient("telegram_bot_client").RemoveAllLoggers()
+        services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
             {
                 var options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value;
@@ -56,7 +56,7 @@ public static class ServiceExtension
         return services;
     }
 
-    public static IHostApplicationBuilder ConfigureApplicationBuilder(this IHostApplicationBuilder hostApplicationBuilder)
+    public static WebApplicationBuilder AddAllServicesInApplicationBuilder(this WebApplicationBuilder hostApplicationBuilder)
     {
         hostApplicationBuilder.Services.AddImplInterfaces(hostApplicationBuilder.Configuration);
 
@@ -83,11 +83,4 @@ public static class ServiceExtension
 
         return webApplication;
     }
-
-    public static WebApplication ConfigureBotApplicationBuilder(this WebApplication botApplicationBuilder)
-    {
-        botApplicationBuilder.ConfigureWebApplication();
-        return botApplicationBuilder;
-    }
-
 }

@@ -9,18 +9,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.Negotiate" Version="8.0.11" />
     <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.1" />
-    <PackageReference Include="Microsoft.TeamFoundationServer.Client" Version="19.225.1" />
     <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
     <PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="19.225.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.InteractiveClient" Version="19.225.1" />
-    <PackageReference Include="Microsoft.VisualStudio.Services.Notifications.WebApi" Version="19.225.1" />
     <PackageReference Include="Microsoft.VisualStudio.Services.ServiceHooks.WebApi" Version="19.225.1" />
-    <PackageReference Include="MinimalTelegramBot" Version="0.0.40" />
     <PackageReference Include="MinimalTelegramBot.StateMachine" Version="0.0.40" />
-    <PackageReference Include="MinimalTelegramBot.StateMachine.Persistence.EntityFrameworkCore" Version="0.0.40" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
     <PackageReference Include="Telegram.Bot" Version="22.3.0" />
   </ItemGroup>
