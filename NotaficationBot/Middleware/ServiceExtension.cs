@@ -17,7 +17,7 @@ public static class ServiceExtension
         services.Configure<NotificationsBot.Models.TelegramBotClientOptions>(configurationManager.GetSection("BotClientOptions"));
         services.AddDbContext<AppContext>(oprions =>
         {
-            oprions.UseSqlite(connectionString);
+            oprions.UseNpgsql(connectionString);
         });
         services.AddScoped<IUsersDataService, UsersDataService>();
         services.AddScoped<INotificationService, TelegramNotificationService>();
