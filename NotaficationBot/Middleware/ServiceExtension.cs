@@ -1,12 +1,10 @@
-﻿using NotificationsBot.Interfaces.Impl;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
+using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
-using Microsoft.EntityFrameworkCore;
-using MinimalTelegramBot.StateMachine.Extensions;
-using MinimalTelegramBot.Builder;
-using MinimalTelegramBot;
-using NotificationsBot.States;
-using Telegram.Bot.Types.Enums;
-using MinimalTelegramBot.Handling;
+using NotificationsBot.Interfaces.Impl;
+using Telegram.Bot;
+using Telegram.Bot.Polling;
 
 namespace NotificationsBot.Middleware;
 
@@ -16,14 +14,37 @@ public static class ServiceExtension
     {
 
         string connectionString = configurationManager.GetConnectionString("DefaultConnection");
+        services.Configure<NotificationsBot.Models.TelegramBotClientOptions>(configurationManager.GetSection("BotClientOptions"));
         services.AddDbContext<AppContext>(oprions =>
         {
-            oprions.UseSqlite(connectionString);
+            oprions.UseNpgsql(connectionString);
         });
         services.AddScoped<IUsersDataService, UsersDataService>();
         services.AddScoped<INotificationService, TelegramNotificationService>();
+        services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
+        services.AddScoped<IUpdateHandler, TelegramCommandHandler>();
+        services.AddScoped<ReceiverService>();
+        services.AddHostedService<PollingService>();
 
-        services.AddStateMachine();
+
+        services.AddHttpClient("telegram_bot_client")
+            .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
+            {
+                var options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value;
+
+                if (options.Token is null)
+                {
+                    throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
+                }
+
+
+                var ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token, options?.BaseUrl, options?.UseTestEnvironment ?? false)
+                {
+                    RetryCount = options.RetryCount,
+                    RetryThreshold = options.RetryThreshold
+                };
+                return new TelegramBotClient(ctorOptions, httpClient);
+            });
 
         return services;
     }
@@ -35,7 +56,7 @@ public static class ServiceExtension
         return services;
     }
 
-    public static IHostApplicationBuilder ConfigureApplicationBuilder(this IHostApplicationBuilder hostApplicationBuilder)
+    public static WebApplicationBuilder AddAllServicesInApplicationBuilder(this WebApplicationBuilder hostApplicationBuilder)
     {
         hostApplicationBuilder.Services.AddImplInterfaces(hostApplicationBuilder.Configuration);
 
@@ -46,41 +67,6 @@ public static class ServiceExtension
 
         return hostApplicationBuilder;
     }
-
-    public static BotApplication ConfigureBotApplication(this BotApplication botApplication)
-    {
-        botApplication.UseStateMachine();
-        botApplication.HandleCommand("/start", () => "Hello, World!");
-        botApplication.HandleCommand("/register", async (BotRequestContext context) =>
-        {
-            var state = new RegisterState.AskLoginState();
-            await context.SetState(state);
-            return "Enter your login";
-        });
-        botApplication.HandleUpdateType(UpdateType.Message, async (string messageText, BotRequestContext context, IUsersDataService usersDataService) =>
-        {
-            try
-            {
-                var result = usersDataService?.SaveNewUser(messageText, context.ChatId);
-                if (result == null)
-                {
-                    throw new NullReferenceException("Регистрация клиента недоступна");
-                }
-            }
-            catch (NullReferenceException ex)
-            {
-                return ex.Message;
-            }
-            catch (Exception ex)
-            {
-                return "Наелся и спит -_-";
-            }
-            await context.DropState();
-            return "Все заебок";
-        }).FilterState<RegisterState.AskLoginState>();
-
-        return botApplication;
-    } 
 
     public static WebApplication ConfigureWebApplication(this WebApplication webApplication)
     {
@@ -97,12 +83,4 @@ public static class ServiceExtension
 
         return webApplication;
     }
-
-    public static IBotApplicationBuilder ConfigureBotApplicationBuilder(this BotApplication botApplicationBuilder)
-    {
-        botApplicationBuilder.ConfigureBotApplication();
-        botApplicationBuilder.WebApplicationAccessor.ConfigureWebApplication();
-        return botApplicationBuilder;
-    }
-
 }
