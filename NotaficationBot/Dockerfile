@@ -7,7 +7,7 @@ WORKDIR /app
 EXPOSE 8080
 EXPOSE 8081
 
-
+# ENV ASPNETCORE_URLS=https://+:8080;http://+:8081
 
 # Этот этап используется для сборки проекта службы
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build

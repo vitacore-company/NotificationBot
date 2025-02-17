@@ -12,8 +12,12 @@ public static class ServiceExtension
 {
     public static IServiceCollection AddImplInterfaces(this IServiceCollection services, IConfigurationManager configurationManager)
     {
-
+        configurationManager.AddEnvironmentVariables();
         string connectionString = configurationManager.GetConnectionString("DefaultConnection");
+        if (string.IsNullOrEmpty(connectionString))
+        {
+            connectionString = $@"Host=postgresql;Database={configurationManager["POSTGRES_DB"]};Port={configurationManager["POSTGRES_EXPOSE_PORTS"]};Username={configurationManager["POSTGRES_USER"]};Password={configurationManager["POSTGRES_PASSWORD"]}";
+        }
         services.Configure<NotificationsBot.Models.TelegramBotClientOptions>(configurationManager.GetSection("BotClientOptions"));
         services.AddDbContext<AppContext>(oprions =>
         {
@@ -32,9 +36,10 @@ public static class ServiceExtension
             {
                 var options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value;
 
-                if (options.Token is null)
+                if (string.IsNullOrEmpty(options.Token))
                 {
-                    throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
+                    options.Token = configurationManager.GetValue<string>("BotToken");
+                    //throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
                 }
 
 
@@ -58,6 +63,12 @@ public static class ServiceExtension
 
     public static WebApplicationBuilder AddAllServicesInApplicationBuilder(this WebApplicationBuilder hostApplicationBuilder)
     {
+#if DEBUG
+        foreach (var c in hostApplicationBuilder.Configuration.AsEnumerable())
+        {
+            Console.WriteLine(c.Key + " = " + c.Value);
+        }
+#endif
         hostApplicationBuilder.Services.AddImplInterfaces(hostApplicationBuilder.Configuration);
 
         hostApplicationBuilder.Services.AddControllers()
