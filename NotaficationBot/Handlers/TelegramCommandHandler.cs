@@ -6,6 +6,11 @@ using Telegram.Bot.Types.Enums;
 
 namespace NotificationsBot.Handlers;
 
+/// <summary>
+/// <inheritdoc cref="NotificationsBot.Handlers.ITelegramCommandHandler"/>
+/// </summary>
+/// <seealso cref="NotificationsBot.Handlers.ITelegramCommandHandler" />
+/// <seealso cref="Telegram.Bot.Polling.IUpdateHandler" />
 public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 {
     private readonly ITelegramBotClient _botClient;
@@ -17,11 +22,22 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         _usersDataService = usersDataService;
     }
 
+    /// <summary>
+    /// Обрабатывает <see cref="T:Telegram.Bot.Types.Update" />.
+    /// </summary>
+    /// <param name="botClient">Экземпляр <see cref="T:Telegram.Bot.ITelegramBotClient" /> бота, получающего <see cref="T:Telegram.Bot.Types.Update" /></param>
+    /// <param name="update"><see cref="T:Telegram.Bot.Types.Update" /> для обработки</param>
+    /// <param name="cancellationToken">Токен <see cref="T:System.Threading.CancellationToken" />, который будет уведомлять о том, что выполнение метода должно быть отменено</param>
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
         await HandleOnUpdate(update.Message, update.Type);
     }
 
+    /// <summary>
+    /// Обработка обновлений в чате бота
+    /// </summary>
+    /// <param name="msg">Сообщение.</param>
+    /// <param name="type">Тип обновления в чате.</param>
     public async Task HandleOnUpdate(Message? msg, UpdateType type)
     {
 
@@ -84,6 +100,10 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         }
     }
 
+    /// <summary>
+    /// Обрабатывает сообщение.
+    /// </summary>
+    /// <param name="msg">Cообщение</param>
     private async Task HandleOnMessage(Message msg)
     {
         switch (msg.Text)
@@ -103,6 +123,11 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         }
         //return Task.CompletedTask;
     }
+
+    /// <summary>
+    /// Обрабатывает сообщение с проверкой состояния.
+    /// </summary>
+    /// <param name="msg">Сообщение</param>
     private async Task HandleOnMessageWithState(Message msg)
     {
         string status = await _usersDataService.GetStatus(msg.Chat.Id);
@@ -121,6 +146,14 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         }
     }
 
+    /// <summary>
+    /// Обрабатывает исключение <see cref="T:System.Exception" />
+    /// </summary>
+    /// <param name="botClient">Экземпляр <see cref="T:Telegram.Bot.ITelegramBotClient" /> бота, получившего <see cref="T:System.Exception" /></param>
+    /// <param name="exception">Экземпляр <see cref="T:System.Exception" /> для обработки</param>
+    /// <param name="source">Место возникновения ошибки</param>
+    /// <param name="cancellationToken">Токен <see cref="T:System.Threading.CancellationToken" />, который будет уведомлять о том, что выполнение метода должно быть отменено</param>.
+    /// <returns></returns>
     public Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, HandleErrorSource source, CancellationToken cancellationToken)
     {
         return Task.CompletedTask;

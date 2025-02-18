@@ -8,6 +8,10 @@ using User = NotificationsBot.Models.User;
 
 namespace NotificationsBot.Interfaces.Impl;
 
+/// <summary>
+/// Сервис уведомления для телеграмм бота
+/// </summary>
+/// <seealso cref="NotificationsBot.Interfaces.INotificationService" />
 public class TelegramNotificationService : INotificationService
 {
     private readonly AppContext _appContext;
@@ -20,7 +24,7 @@ public class TelegramNotificationService : INotificationService
     }
 
     /// <summary>
-    /// Уведомляет об указанном событии.
+    /// <inheritdoc/>
     /// </summary>
     /// <param name="eventNotification">Уведомление о событии.</param>
     /// <returns></returns>
@@ -76,6 +80,12 @@ public class TelegramNotificationService : INotificationService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Отправь уведомление о создании PR.
+    /// </summary>
+    /// <param name="resource">Данные о событии</param>
+    /// <param name="message">Сообщение.</param>
+    /// <returns></returns>
     private Task PullRequestCreatedNotify(PullRequestCreatedResource resource, string message)
     {
         HashSet<string> users = resource.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
@@ -87,7 +97,13 @@ public class TelegramNotificationService : INotificationService
         }
         return Task.CompletedTask;
     }
-    
+
+    /// <summary>
+    /// Отправь уведомление о комментарии в PR.
+    /// </summary>
+    /// <param name="resource">Данные о событии</param>
+    /// <param name="message">Сообщение.</param>
+    /// <returns></returns>
     private Task PullRequestCommentNotify(PullRequestCommentedResource resource, string message)
     {
         HashSet<string> users = resource.pullRequest.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
@@ -117,7 +133,12 @@ public class TelegramNotificationService : INotificationService
         return users.Select(user => user.ChatId).ToList();
     }
 
-    private string FormatMarkdownToTelegram(string markdown)
+    /// <summary>
+    /// Экранирует служебные символы, т.к. в телеграмм не имеет полной поддержки всех Markdown символов
+    /// </summary>
+    /// <param name="markdown">Markdown-сообщение.</param>
+    /// <returns></returns>
+    private static string FormatMarkdownToTelegram(string markdown)
     {
         return Regex.Replace(markdown, "([\\\\_*`|!.[\\](){}>+#=~-])", "\\$1");
     }
