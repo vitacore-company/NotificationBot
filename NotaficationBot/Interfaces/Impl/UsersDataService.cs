@@ -26,11 +26,11 @@ public class UsersDataService : IUsersDataService
         return Task.CompletedTask;
     }
 
-    public async Task<string?> GetStatus(long chatId)
+    public async Task<string> GetStatus(long chatId)
     {
         User user = await _context.Users.FindAsync(chatId)
             ?? throw new Exception("Не найден пользователь");
-        return user.State;
+        return user.State ?? string.Empty;
     }
 
     public async Task<bool> IsContainUser(long chatId)
