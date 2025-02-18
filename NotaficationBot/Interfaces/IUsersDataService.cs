@@ -11,7 +11,7 @@ public interface IUsersDataService
     /// <param name="login">Логин.</param>
     /// <param name="chatId">Идентификатор чата.</param>
     /// <returns></returns>
-    public Task SaveNewUser(string login, long chatId);
+    public Task SaveNewUser(string? login, long chatId);
     /// <summary>
     /// Обновляет пользователя.
     /// </summary>

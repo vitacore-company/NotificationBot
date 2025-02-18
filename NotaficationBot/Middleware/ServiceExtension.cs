@@ -13,15 +13,15 @@ public static class ServiceExtension
     public static IServiceCollection AddImplInterfaces(this IServiceCollection services, IConfigurationManager configurationManager)
     {
         configurationManager.AddEnvironmentVariables();
-        string connectionString = configurationManager.GetConnectionString("DefaultConnection");
+        string connectionString = configurationManager.GetConnectionString("DefaultConnection") ?? string.Empty;
         if (string.IsNullOrEmpty(connectionString))
         {
             connectionString = $@"Host=postgresql;Database={configurationManager["POSTGRES_DB"]};Port={configurationManager["POSTGRES_EXPOSE_PORTS"]};Username={configurationManager["POSTGRES_USER"]};Password={configurationManager["POSTGRES_PASSWORD"]}";
         }
         services.Configure<NotificationsBot.Models.TelegramBotClientOptions>(configurationManager.GetSection("BotClientOptions"));
-        services.AddDbContext<AppContext>(oprions =>
+        services.AddDbContext<AppContext>(options =>
         {
-            oprions.UseNpgsql(connectionString);
+            options.UseNpgsql(connectionString);
         });
         services.AddScoped<IUsersDataService, UsersDataService>();
         services.AddScoped<INotificationService, TelegramNotificationService>();
@@ -34,7 +34,8 @@ public static class ServiceExtension
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
             {
-                var options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value;
+                Models.TelegramBotClientOptions options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value ?? 
+                new Models.TelegramBotClientOptions();
 
                 if (string.IsNullOrEmpty(options.Token))
                 {
@@ -42,10 +43,9 @@ public static class ServiceExtension
                     //throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
                 }
 
-
-                var ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token, options?.BaseUrl, options?.UseTestEnvironment ?? false)
+                TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
                 {
-                    RetryCount = options.RetryCount,
+                    RetryCount = options!.RetryCount,
                     RetryThreshold = options.RetryThreshold
                 };
                 return new TelegramBotClient(ctorOptions, httpClient);

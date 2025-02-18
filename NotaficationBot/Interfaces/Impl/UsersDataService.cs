@@ -47,11 +47,11 @@ public class UsersDataService : IUsersDataService
     /// <param name="chatId">Идентификатор чата.</param>
     /// <returns></returns>
     /// <exception cref="System.Exception">Не найден пользователь</exception>
-    public async Task<string?> GetStatus(long chatId)
+    public async Task<string> GetStatus(long chatId)
     {
         User user = await _context.Users.FindAsync(chatId)
             ?? throw new Exception("Не найден пользователь");
-        return user.State;
+        return user.State ?? string.Empty;
     }
 
     /// <summary>

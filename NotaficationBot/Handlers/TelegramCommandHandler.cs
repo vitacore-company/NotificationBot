@@ -38,7 +38,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     /// </summary>
     /// <param name="msg">Сообщение.</param>
     /// <param name="type">Тип обновления в чате.</param>
-    public async Task HandleOnUpdate(Message msg, UpdateType type)
+    public async Task HandleOnUpdate(Message? msg, UpdateType type)
     {
 
         switch (type)
@@ -46,7 +46,10 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
             case UpdateType.Unknown:
                 break;
             case UpdateType.Message:
-                await HandleOnMessage(msg);
+                if (msg != null)
+                {
+                    await HandleOnMessage(msg);
+                }
                 break;
             case UpdateType.InlineQuery:
                 break;
@@ -131,7 +134,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         switch (status)
         {
             case "/register":
-                if (_usersDataService.IsContainUser(msg.Chat.Id).Result)
+                if (_usersDataService.IsContainUser(msg.Chat.Id).Result && msg.Text != null)
                 {
                     await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id);
                     await _botClient.SendMessage(msg.Chat, "SUper!!!");
