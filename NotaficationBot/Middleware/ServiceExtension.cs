@@ -85,9 +85,10 @@ public static class ServiceExtension
         {
             webApplication.UseSwagger();
             webApplication.UseSwaggerUI();
+
+            //webApplication.UseHttpsRedirection();
         }
 
-        webApplication.UseHttpsRedirection();
 
         webApplication.MapControllers();
 

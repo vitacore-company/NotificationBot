@@ -39,6 +39,9 @@
     build:
       context: NotaficationBot
       dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORTS}
+      - ${HTTPS_PORTS}
     networks:
       - network
     depends_on:
