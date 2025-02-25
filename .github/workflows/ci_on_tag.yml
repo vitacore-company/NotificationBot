@@ -12,7 +12,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DOCKER_TAG: ${{ github.GITHUB_REF_NAME }}
+      DOCKER_TAG: test
       $APP_UID: ''
       PROJECT: NotaficationBot
 
@@ -21,6 +21,7 @@ jobs:
 
     - name: Build the Docker image
       run: docker build -f ./NotaficationBot/Dockerfile -t $PROJECT:$DOCKER_TAG . 
+      echo ${{ github.GITHUB_REF_NAME }}
       #&& docker tag $PROJECT:$DOCKER_TAG vitacore/$PROJECT:$DOCKER_TAG 
 
     - name: Login in DockerHub
