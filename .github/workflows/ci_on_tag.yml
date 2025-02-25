@@ -1,4 +1,4 @@
-name: Docker Image on tag
+name: "Docker Image on tag"
 
 on:
   push:

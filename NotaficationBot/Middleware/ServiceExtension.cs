@@ -12,12 +12,16 @@ public static class ServiceExtension
 {
     public static IServiceCollection AddImplInterfaces(this IServiceCollection services, IConfigurationManager configurationManager)
     {
-
-        string connectionString = configurationManager.GetConnectionString("DefaultConnection");
-        services.Configure<NotificationsBot.Models.TelegramBotClientOptions>(configurationManager.GetSection("BotClientOptions"));
-        services.AddDbContext<AppContext>(oprions =>
+        configurationManager.AddEnvironmentVariables();
+        string connectionString = configurationManager.GetConnectionString("DefaultConnection") ?? string.Empty;
+        if (string.IsNullOrEmpty(connectionString))
         {
-            oprions.UseNpgsql(connectionString);
+            connectionString = $@"Host=postgresql;Database={configurationManager["POSTGRES_DB"]};Port={configurationManager["POSTGRES_EXPOSE_PORTS"]};Username={configurationManager["POSTGRES_USER"]};Password={configurationManager["POSTGRES_PASSWORD"]}";
+        }
+        services.Configure<NotificationsBot.Models.TelegramBotClientOptions>(configurationManager.GetSection("BotClientOptions"));
+        services.AddDbContext<AppContext>(options =>
+        {
+            options.UseNpgsql(connectionString);
         });
         services.AddScoped<IUsersDataService, UsersDataService>();
         services.AddScoped<INotificationService, TelegramNotificationService>();
@@ -30,17 +34,18 @@ public static class ServiceExtension
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
             {
-                var options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value;
+                Models.TelegramBotClientOptions options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value ?? 
+                new Models.TelegramBotClientOptions();
 
-                if (options.Token is null)
+                if (string.IsNullOrEmpty(options.Token))
                 {
-                    throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
+                    options.Token = configurationManager.GetValue<string>("BotToken");
+                    //throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
                 }
 
-
-                var ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token, options?.BaseUrl, options?.UseTestEnvironment ?? false)
+                TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
                 {
-                    RetryCount = options.RetryCount,
+                    RetryCount = options!.RetryCount,
                     RetryThreshold = options.RetryThreshold
                 };
                 return new TelegramBotClient(ctorOptions, httpClient);
@@ -58,6 +63,12 @@ public static class ServiceExtension
 
     public static WebApplicationBuilder AddAllServicesInApplicationBuilder(this WebApplicationBuilder hostApplicationBuilder)
     {
+#if DEBUG
+        foreach (var c in hostApplicationBuilder.Configuration.AsEnumerable())
+        {
+            Console.WriteLine(c.Key + " = " + c.Value);
+        }
+#endif
         hostApplicationBuilder.Services.AddImplInterfaces(hostApplicationBuilder.Configuration);
 
         hostApplicationBuilder.Services.AddControllers()
@@ -74,9 +85,10 @@ public static class ServiceExtension
         {
             webApplication.UseSwagger();
             webApplication.UseSwaggerUI();
+
+            //webApplication.UseHttpsRedirection();
         }
 
-        webApplication.UseHttpsRedirection();
 
         webApplication.MapControllers();
 
