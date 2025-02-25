@@ -21,7 +21,7 @@ jobs:
 
     - name: Build the Docker image
       run: |
-          docker build -f ./NotaficationBot/Dockerfile -t $PROJECT:$DOCKER_TAG . 
+          docker build -f ./NotaficationBot/Dockerfile -t $PROJECT:$DOCKER_TAG ./NotaficationBot 
           echo ${{ github.GITHUB_REF_NAME }}
       #&& docker tag $PROJECT:$DOCKER_TAG vitacore/$PROJECT:$DOCKER_TAG 
 
