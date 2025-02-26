@@ -15,8 +15,8 @@ jobs:
       $APP_UID: ''
       PROJECT: notaficationbot
       REF_NAME: ${{ github.ref_name }}
-      # DOCKERHUB_USERNAME: ${{ secrets.DOCKERHUB_USERNAME }}
-      # DOCKERHUB_TOKEN: ${{ secrets.DOCKERHUB_TOKEN }}
+      ${{ secrets.DOCKERHUB_USERNAME }}
+      ${{ secrets.DOCKERHUB_TOKEN }}
 
     steps:
     - uses: actions/checkout@v2
