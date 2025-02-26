@@ -25,6 +25,8 @@ jobs:
       run: |
           docker build -f ./NotaficationBot/Dockerfile -t $PROJECT:$DOCKER_TAG ./NotaficationBot 
           echo $REF_NAME
+          echo $DOCKERHUB_USERNAME
+          echo $DOCKERHUB_TOKEN
       #&& docker tag $PROJECT:$DOCKER_TAG vitacore/$PROJECT:$DOCKER_TAG 
 
     - name: Login in DockerHub
