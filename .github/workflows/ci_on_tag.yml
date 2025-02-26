@@ -28,8 +28,8 @@ jobs:
     - uses: docker/build-push-action@v6
       name: Build and push
       with:
-        context: .
-        file: 
+        context: ./NotaficationBot
+        file: Dockerfile
         push: true
         tags: |
           vitacore/${{ env.PROJECT }}:test
