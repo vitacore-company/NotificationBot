@@ -32,5 +32,4 @@ jobs:
         file: 
         push: true
         tags: |
-          vitacore/$PROJECT:$DOCKER_TAG
-          vitacore/$PROJECT:latest
+          vitacore/$PROJECT:test
