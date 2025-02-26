@@ -32,4 +32,4 @@ jobs:
         file: 
         push: true
         tags: |
-          vitacore/$PROJECT:test
+          vitacore/${{ env.PROJECT }}:test
