@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DOCKER_TAG: test
-      $APP_UID: ''
+      ORGANIZATION: vitacore
       PROJECT: notaficationbot
       REF_NAME: ${{ github.ref_name }}
 
@@ -32,4 +32,4 @@ jobs:
         file: ./NotaficationBot/Dockerfile
         push: true
         tags: |
-          vitacore/${{ env.PROJECT }}:test
+          ${{ env.ORGANIZATION }}/${{ env.PROJECT }}:test
