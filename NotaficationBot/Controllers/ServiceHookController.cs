@@ -16,8 +16,9 @@ public class ServiceHookController : ControllerBase
     }
 
     [HttpPost]
-    public void Notification([FromBody] Event value)
+    public async Task<ActionResult> Notification([FromBody] Event value)
     {
-        _notificationService.Notify(value);
+        await _notificationService.Notify(value);
+        return Accepted();
     }
 }
