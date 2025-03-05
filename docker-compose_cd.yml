@@ -9,8 +9,7 @@
     volumes:
       - db:/var/lib/postgresql/data
     env_file:
-      - path: ./.env
-        required: false
+      - .env
     environment:
       - 'POSTGRES_USER= ${POSTGRES_USER}'
       - 'POSTGRES_PASSWORD= ${POSTGRES_PASSWORD}'
@@ -34,8 +33,7 @@
     depends_on:
       - postgresql
     env_file:
-      - path: ./.env
-        required: false
+      - .env
 
 volumes:
   db:
