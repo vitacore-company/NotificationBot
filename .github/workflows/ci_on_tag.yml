@@ -2,10 +2,10 @@ name: "Docker Image on tag"
 
 on:
   push:
-    # tags:
-    #   - "v*"
-    branches:
-     - "*"
+    tags:
+      - "v*"
+    # branches:
+    #  - "*"
 
 jobs:
   build:
