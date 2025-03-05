@@ -1,0 +1,46 @@
+﻿services:
+  postgresql:
+    container_name: postgres-latest
+    image: postgres
+    expose:
+      - "${POSTGRES_EXPOSE_PORTS}"
+    ports:
+      - ${POSTGRES_PORTS}
+    volumes:
+      - db:/var/lib/postgresql/data
+    env_file:
+      - path: ./.env
+        required: false
+    environment:
+      - 'POSTGRES_USER= ${POSTGRES_USER}'
+      - 'POSTGRES_PASSWORD= ${POSTGRES_PASSWORD}'
+      - 'POSTGRES_DB= ${POSTGRES_DB}'
+    networks:
+      - network
+
+  notificationsbot:
+    image: ${DOCKER_REGISTRY-}notificationsbot
+    build:
+      context: NotaficationBot
+      dockerfile: Dockerfile
+    ports:
+      - ${HTTP_PORTS}
+      - ${HTTPS_PORTS}
+    networks:
+      - network
+    depends_on:
+      - postgresql
+    env_file:
+      - path: ./.env
+        required: false
+
+volumes:
+  db:
+    driver: local
+
+networks:
+  network:
+    ipam:
+      driver: default
+      config:
+        - subnet: ${SUBNET}
