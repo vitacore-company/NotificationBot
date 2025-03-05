@@ -3,9 +3,9 @@
     container_name: postgres-latest
     image: postgres
     expose:
-      - "${POSTGRES_EXPOSE_PORTS}"
+      - ${POSTGRES_EXPOSE_PORT}
     ports:
-      - ${POSTGRES_PORTS}
+      - ${POSTGRES_PORT}:${POSTGRES_EXPOSE_PORT}
     volumes:
       - db:/var/lib/postgresql/data
     env_file:
@@ -26,8 +26,8 @@
   notaficationbot:
     image: ${DOCKER_REGISTRY}/notaficationbot:${TAG}
     ports:
-      - ${HTTP_PORTS}
-      - ${HTTPS_PORTS}
+      - ${HTTP_PORT}:8080
+      - ${HTTPS_PORT}:8081
     networks:
       - network
     depends_on:
