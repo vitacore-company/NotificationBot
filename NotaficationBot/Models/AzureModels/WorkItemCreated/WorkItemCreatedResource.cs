@@ -7,8 +7,6 @@ namespace NotificationsBot.Models.AzureModels.WorkItemCreated
     {
         public int Id { get; set; }
         public int Rev { get; set; }
-
-        [DataMember(EmitDefaultValue = false)]
         [JsonConverter(typeof(FieldDictionaryConverter))]
         public IDictionary<string, object> Fields { get; set; }
         public string Url { get; set; }
