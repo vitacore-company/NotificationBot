@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
@@ -23,6 +24,7 @@ public static class ServiceExtension
         {
             options.UseNpgsql(connectionString);
         });
+        services.AddHealthChecks();
         services.AddScoped<IUsersDataService, UsersDataService>();
         services.AddScoped<INotificationService, TelegramNotificationService>();
         services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
@@ -40,10 +42,9 @@ public static class ServiceExtension
                 if (string.IsNullOrEmpty(options.Token))
                 {
                     options.Token = configurationManager.GetValue<string>("BotToken");
-                    //throw new InvalidOperationException("Cannot instantiate a bot client without a configured bot token.");
                 }
 
-                TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
+               TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
                 {
                     RetryCount = options!.RetryCount,
                     RetryThreshold = options.RetryThreshold
@@ -85,13 +86,11 @@ public static class ServiceExtension
         {
             webApplication.UseSwagger();
             webApplication.UseSwaggerUI();
-
-            //webApplication.UseHttpsRedirection();
         }
 
+        webApplication.UseHealthChecks("/health");
 
         webApplication.MapControllers();
-
 
         return webApplication;
     }
