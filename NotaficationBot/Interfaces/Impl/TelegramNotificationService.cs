@@ -8,7 +8,6 @@ using NotificationsBot.Utils;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
-using static Microsoft.VisualStudio.Services.Graph.GraphResourceIds;
 using User = NotificationsBot.Models.User;
 
 namespace NotificationsBot.Interfaces.Impl;
@@ -160,7 +159,7 @@ public class TelegramNotificationService : INotificationService
     }
 
     /// <summary>
-    /// Отправь уведомление о создании рабочего элемента.
+    /// Оповещения о смене состояния сборки
     /// </summary>
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
