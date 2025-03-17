@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.Services.ServiceHooks.WebApi;
 using Newtonsoft.Json;
+using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Models.AzureModels.PullRequestCreated;
 using NotificationsBot.Models.AzureModels.WorkItemCreated;
@@ -7,6 +8,7 @@ using NotificationsBot.Utils;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
+using static Microsoft.VisualStudio.Services.Graph.GraphResourceIds;
 using User = NotificationsBot.Models.User;
 
 namespace NotificationsBot.Interfaces.Impl;
@@ -82,6 +84,14 @@ public class TelegramNotificationService : INotificationService
                 break;
             case "workitem.commented":// A work item is commented on.
                 break;
+            case "build.complete": // build stage changed (success, fail)
+                {
+                    BuildStateChangedNotify(
+                    JsonConvert.DeserializeObject<BuildStateChangedResource>(eventNotification.Resource.ToString()),
+                    eventNotification.DetailedMessage.Markdown
+                    );
+                }
+                break;
         }
         return Task.CompletedTask;
     }
@@ -149,6 +159,23 @@ public class TelegramNotificationService : INotificationService
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Отправь уведомление о создании рабочего элемента.
+    /// </summary>
+    /// <param name="resource">Данные о событии</param>
+    /// <param name="message">Сообщение.</param>
+    /// <returns></returns>
+    private Task BuildStateChangedNotify(BuildStateChangedResource resource, string message)
+    {
+        HashSet<string> users = new HashSet<string>();
+
+        users.Add(resource.requestedBy.uniqueName);
+        List<long> chatIds = GetChatIds(users.ToList());
+        _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+
+        return Task.CompletedTask;
+    }
+
     private long GetChatId(string displayName)
     {
         User? user = _appContext.Users.FirstOrDefault(user => user.Login == displayName);
@@ -173,7 +200,6 @@ public class TelegramNotificationService : INotificationService
     private static string FormatMarkdownToTelegram(string markdown)
     {
         return Markdown.Escape(markdown);
-        //return Regex.Replace(markdown, "([\\\\_*`|!.[\\](){}>+#=~-])", "\\$1");
     }
 }
 
