@@ -13,7 +13,7 @@ jobs:
     env:
       DOCKER_TAG: latest
       ORGANIZATION: vitacore
-      PROJECT: notaficationbot
+      PROJECT: notificationbot
 
     steps:
     - uses: actions/checkout@v2
@@ -27,8 +27,8 @@ jobs:
     - uses: docker/build-push-action@v6
       name: Build and push
       with:
-        context: ./NotaficationBot
-        file: ./NotaficationBot/Dockerfile
+        context: ./NotificationBot
+        file: ./NotificationBot/Dockerfile
         push: true
         tags: |
           ${{ env.ORGANIZATION }}/${{ env.PROJECT }}:${{ env.DOCKER_TAG }}
