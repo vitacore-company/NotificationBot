@@ -5,6 +5,7 @@ using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Models.AzureModels.PullRequestCreated;
 using NotificationsBot.Models.AzureModels.WorkItemCreated;
 using NotificationsBot.Utils;
+using System.Text;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
@@ -198,7 +199,17 @@ public class TelegramNotificationService : INotificationService
     /// <returns></returns>
     private static string FormatMarkdownToTelegram(string markdown)
     {
-        return Markdown.Escape(markdown);
+        StringBuilder escaped = new StringBuilder();
+        foreach (char ch in markdown)
+        {
+            if (ch >= 1 && ch <= 126)
+            {
+                escaped.Append('\\');
+            }
+            escaped.Append(ch);
+        }
+
+        return escaped.ToString();
     }
 }
 
