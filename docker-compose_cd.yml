@@ -23,8 +23,8 @@
     networks:
       - network
 
-  notaficationbot:
-    container_name: notaficationbot-app
+  notificationbot:
+    container_name: notificationbot-app
     image: ${DOCKER_REGISTRY}/notificationbot:${TAG}
     ports:
       - ${HTTPS_PORT}:8080
