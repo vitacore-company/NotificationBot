@@ -5,6 +5,7 @@ using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Models.AzureModels.PullRequestCreated;
 using NotificationsBot.Models.AzureModels.WorkItemCreated;
 using NotificationsBot.Utils;
+using System.Text;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
@@ -153,7 +154,11 @@ public class TelegramNotificationService : INotificationService
 
         users.Add(user.ToString());
         List<long> chatIds = GetChatIds(users.ToList());
-        _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+        if (chatIds.Count > 0)
+        {
+            _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+
+        }
 
         return Task.CompletedTask;
     }
@@ -170,7 +175,12 @@ public class TelegramNotificationService : INotificationService
 
         users.Add(resource.requestedBy.uniqueName);
         List<long> chatIds = GetChatIds(users.ToList());
-        _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+
+        if (chatIds.Count > 0)
+        {
+            _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+
+        }
 
         return Task.CompletedTask;
     }
