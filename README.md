@@ -1,4 +1,4 @@
-﻿# NotaficationBot
+﻿# NotificationBot
 ## Что это и для чего?
 Это телеграмм бот для уведомлений о событиях в Azure DevOps 2022
 ## Запуск

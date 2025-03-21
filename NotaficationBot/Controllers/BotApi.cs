@@ -10,14 +10,6 @@ namespace NotificationsBot.Controllers;
 [ApiController]
 public class BotApi : ControllerBase
 {
-    //[HttpPost("xml_notafication")]
-    //[Consumes("application/xml")]
-    //public async Task Notafication([FromBody] XElement xElement)
-    //{
-    //    string message = "";
-    //    return;
-    //}
-
     // GET api/<BotApi>/5
     [HttpGet("{id}")]
     public string Get(int id)

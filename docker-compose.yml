@@ -37,7 +37,7 @@
   notificationsbot:
     image: ${DOCKER_REGISTRY-}notificationsbot
     build:
-      context: NotaficationBot
+      context: NotificationBot
       dockerfile: Dockerfile
     ports:
       - ${HTTP_PORTS}
