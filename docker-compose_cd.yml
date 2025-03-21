@@ -1,6 +1,6 @@
 ﻿services:
   postgresql:
-    container_name: notaficationbot-postgres
+    container_name: notificationbot-postgres
     image: postgres:16
     expose:
       - ${POSTGRES_EXPOSE_PORT}
@@ -25,7 +25,7 @@
 
   notaficationbot:
     container_name: notaficationbot-app
-    image: ${DOCKER_REGISTRY}/notaficationbot:${TAG}
+    image: ${DOCKER_REGISTRY}/notificationbot:${TAG}
     ports:
       - ${HTTPS_PORT}:8080
       - ${HTTP_PORT}:8081
