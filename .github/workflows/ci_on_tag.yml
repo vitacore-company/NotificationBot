@@ -3,28 +3,33 @@ name: "Docker Image on tag"
 on:
   push:
     tags:
-      - "t*"
+      - "v*"
+    # branches:
+    #  - "*"
 
 jobs:
   build:
     runs-on: ubuntu-latest
     env:
-      DOCKER_TAG: ${{ github.GITHUB_REF_NAME }}
-      $APP_UID: ''
-      PROJECT: NotaficationBot
+      DOCKER_TAG: latest
+      ORGANIZATION: vitacore
+      PROJECT: notaficationbot
 
     steps:
     - uses: actions/checkout@v2
 
-    - name: Build the Docker image
-      run: docker build --build-arg $APP_UID -f ./NotaficationBot/Dockerfile -t $PROJECT:$DOCKER_TAG . 
-      #&& docker tag $PROJECT:$DOCKER_TAG vitacore/$PROJECT:$DOCKER_TAG 
+    - uses: docker/login-action@v3
+      name: Login to Docker Hub
+      with:
+        username: ${{ secrets.DOCKERHUB_USERNAME }}
+        password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-    - name: Login in DockerHub
-      run: docker login --username ${{ secrets.DOCKERHUB_USERNAME }} --password ${{ secrets.DOCKERHUB_TOKEN }}
-
-    - name: Push image to DockerHub
-      run:  docker push vitacore/$PROJECT:$DOCKER_TAG
-    
-    - name: Logout in DockerHub
-      run: docker logout
+    - uses: docker/build-push-action@v6
+      name: Build and push
+      with:
+        context: ./NotaficationBot
+        file: ./NotaficationBot/Dockerfile
+        push: true
+        tags: |
+          ${{ env.ORGANIZATION }}/${{ env.PROJECT }}:${{ env.DOCKER_TAG }}
+          ${{ env.ORGANIZATION }}/${{ env.PROJECT }}:${{ github.ref_name }}
