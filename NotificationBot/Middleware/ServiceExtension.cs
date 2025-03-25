@@ -30,6 +30,7 @@ public static class ServiceExtension
         services.AddScoped<ITelegramCommandHandler, TelegramCommandHandler>();
         services.AddScoped<IUpdateHandler, TelegramCommandHandler>();
         services.AddScoped<ReceiverService>();
+        services.AddScoped<IExistUserChecker, ExistUserChecker>();
         services.AddHostedService<PollingService>();
 
 

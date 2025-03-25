@@ -3,6 +3,7 @@ using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.ReplyMarkups;
 
 namespace NotificationsBot.Handlers;
 
@@ -15,11 +16,14 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 {
     private readonly ITelegramBotClient _botClient;
     private readonly IUsersDataService _usersDataService;
+    private readonly IExistUserChecker _userChecker;
 
-    public TelegramCommandHandler(ITelegramBotClient botClient, IUsersDataService usersDataService)
+    public TelegramCommandHandler(ITelegramBotClient botClient, IUsersDataService usersDataService, IExistUserChecker userChecker)
     {
         _botClient = botClient;
         _usersDataService = usersDataService;
+        _userChecker = userChecker;
+
     }
 
     /// <summary>
@@ -30,7 +34,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     /// <param name="cancellationToken">Токен <see cref="T:System.Threading.CancellationToken" />, который будет уведомлять о том, что выполнение метода должно быть отменено</param>
     public async Task HandleUpdateAsync(ITelegramBotClient botClient, Update update, CancellationToken cancellationToken)
     {
-        await HandleOnUpdate(update.Message, update.Type);
+        await HandleOnUpdate(update.Message, update.Type, update);
     }
 
     /// <summary>
@@ -38,9 +42,8 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     /// </summary>
     /// <param name="msg">Сообщение.</param>
     /// <param name="type">Тип обновления в чате.</param>
-    public async Task HandleOnUpdate(Message? msg, UpdateType type)
+    public async Task HandleOnUpdate(Message? msg, UpdateType type, Update update)
     {
-
         switch (type)
         {
             case UpdateType.Unknown:
@@ -56,6 +59,23 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
             case UpdateType.ChosenInlineResult:
                 break;
             case UpdateType.CallbackQuery:
+                {
+                    if (update.CallbackQuery != null)
+                    {
+                        Message? message = update.CallbackQuery.Message;
+
+                        switch (update.CallbackQuery.Data)
+                        {
+                            case "registerButton":
+                                {
+                                    await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id);
+
+                                    await _botClient.SendMessage(message.Chat, "Введите логин (пример DEV\\Name.Surname)");
+                                }
+                                break;
+                        }
+                    }
+                }
                 break;
             case UpdateType.EditedMessage:
                 break;
@@ -109,10 +129,31 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         switch (msg.Text)
         {
             case "/start":
-                await _botClient.SendMessage(msg.Chat, "Hello, World!");
-                if (! await _usersDataService.IsContainUser(msg.Chat.Id))
-                    await _usersDataService.SaveNewUser(null, msg.Chat.Id);
+                {
+                    if (!await _usersDataService.IsContainUser(msg.Chat.Id) && _userChecker.CheckExistUser(msg.From.Id))
+                    {
+                        await _usersDataService.SaveNewUser(null, msg.Chat.Id);
+                        await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
+
+                        var inlineKeyboard = new InlineKeyboardMarkup(
+                        new List<InlineKeyboardButton[]>()
+                        {
+                            new InlineKeyboardButton[] // тут создаем массив кнопок
+                            {
+                                 InlineKeyboardButton.WithCallbackData("Регистрация", "registerButton"),
+                            }
+                        });
+
+                        await _botClient.SendMessage(
+                            msg.Chat.Id,
+                            "Выберите действие",
+                            parseMode: ParseMode.MarkdownV2,
+                            replyMarkup: inlineKeyboard);
+                    }
+
+                }
                 break;
+
             case "/register":
                 await _botClient.SendMessage(msg.Chat, "Enter your login");
                 await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
@@ -121,7 +162,6 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                 await HandleOnMessageWithState(msg);
                 break;
         }
-        //return Task.CompletedTask;
     }
 
     /// <summary>
@@ -136,8 +176,8 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
             case "/register":
                 if (_usersDataService.IsContainUser(msg.Chat.Id).Result && msg.Text != null)
                 {
-                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id);
-                    await _botClient.SendMessage(msg.Chat, "SUper!!!");
+                    await _usersDataService.UpdateUser(msg.Text.ToLower(), msg.Chat.Id);
+                    await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
                     await _usersDataService.CancelStatus(msg.Chat.Id);
                 }
                 break;
