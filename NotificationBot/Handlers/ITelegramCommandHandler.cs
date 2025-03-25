@@ -13,5 +13,5 @@ public interface ITelegramCommandHandler
     /// <param name="msg">Сообщение.</param>
     /// <param name="type">Тип обновления в чате.</param>
     /// <returns></returns>
-    Task HandleOnUpdate(Message msg, UpdateType type);
+    Task HandleOnUpdate(Message msg, UpdateType type, Update update);
 }

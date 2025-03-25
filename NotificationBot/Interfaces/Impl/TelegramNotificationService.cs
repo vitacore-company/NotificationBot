@@ -5,7 +5,6 @@ using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Models.AzureModels.PullRequestCreated;
 using NotificationsBot.Models.AzureModels.WorkItemCreated;
 using NotificationsBot.Utils;
-using System.Text;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
@@ -104,8 +103,8 @@ public class TelegramNotificationService : INotificationService
     /// <returns></returns>
     private Task PullRequestCreatedNotify(PullRequestCreatedResource resource, string message)
     {
-        HashSet<string> users = resource.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
-        users.Add(resource.createdBy.uniqueName);
+        HashSet<string> users = resource.reviewers.Select(reviewer => reviewer.uniqueName.ToLower())?.ToHashSet() ?? new HashSet<string>();
+        users.Add(resource.createdBy.uniqueName.ToLower());
         List<long> chatIds = GetChatIds(users.ToList());
         foreach (long chatId in chatIds)
         {
@@ -122,9 +121,9 @@ public class TelegramNotificationService : INotificationService
     /// <returns></returns>
     private Task PullRequestCommentNotify(PullRequestCommentedResource resource, string message)
     {
-        HashSet<string> users = resource.pullRequest.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
-        users.Add(resource.comment.author.uniqueName);
-        users.Add(resource.pullRequest.createdBy.uniqueName);
+        HashSet<string> users = resource.pullRequest.reviewers.Select(reviewer => reviewer.uniqueName.ToLower())?.ToHashSet() ?? new HashSet<string>();
+        users.Add(resource.comment.author.uniqueName.ToLower());
+        users.Add(resource.pullRequest.createdBy.uniqueName.ToLower());
         List<long> chatIds = GetChatIds(users.ToList());
         foreach (long chatId in chatIds)
         {
@@ -152,7 +151,7 @@ public class TelegramNotificationService : INotificationService
             user = Utilites.GetUniqueUser(resource.Fields["System.AssignedTo"]);
         }
 
-        users.Add(user.ToString());
+        users.Add(user.ToString().ToLower());
         List<long> chatIds = GetChatIds(users.ToList());
         if (chatIds.Count > 0)
         {
@@ -173,7 +172,7 @@ public class TelegramNotificationService : INotificationService
     {
         HashSet<string> users = new HashSet<string>();
 
-        users.Add(resource.requestedBy.uniqueName);
+        users.Add(resource.requestedBy.uniqueName.ToLower());
         List<long> chatIds = GetChatIds(users.ToList());
 
         if (chatIds.Count > 0)
@@ -183,14 +182,6 @@ public class TelegramNotificationService : INotificationService
         }
 
         return Task.CompletedTask;
-    }
-
-    private long GetChatId(string displayName)
-    {
-        User? user = _appContext.Users.FirstOrDefault(user => user.Login == displayName);
-        if (user == null)
-            throw new NullReferenceException("Пользователь не найден");
-        return user.ChatId;
     }
 
     private List<long> GetChatIds(List<string> displayNames)
