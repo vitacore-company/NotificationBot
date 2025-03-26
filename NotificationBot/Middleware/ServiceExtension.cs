@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Options;
 using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
@@ -37,7 +36,7 @@ public static class ServiceExtension
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
             {
-                Models.TelegramBotClientOptions options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value ?? 
+                Models.TelegramBotClientOptions options = sp.GetRequiredService<IOptions<NotificationsBot.Models.TelegramBotClientOptions>>().Value ??
                 new Models.TelegramBotClientOptions();
 
                 if (string.IsNullOrEmpty(options.Token))
@@ -45,7 +44,7 @@ public static class ServiceExtension
                     options.Token = configurationManager.GetValue<string>("BotToken");
                 }
 
-               TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
+                TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
                 {
                     RetryCount = options!.RetryCount,
                     RetryThreshold = options.RetryThreshold
@@ -92,6 +91,23 @@ public static class ServiceExtension
         webApplication.UseHealthChecks("/health");
 
         webApplication.MapControllers();
+
+        using (var scope = webApplication.Services.CreateScope())
+        {
+            var services = scope.ServiceProvider;
+
+            try
+            {
+                var dbContext = services.GetRequiredService<AppContext>();
+                dbContext.Database.Migrate();
+            }
+            catch (Exception ex)
+            {
+                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                logger.LogError(ex, "An error occurred while migrating or seeding the database.");
+                throw;
+            }
+        }
 
         return webApplication;
     }
