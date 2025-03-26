@@ -20,4 +20,9 @@ public class User
     /// Состояние чата пользователя
     /// </summary>
     public string? State { get; set; }
+
+    /// <summary>
+    /// Идентификатор пользователя
+    /// </summary>
+    public long UserId { get; set; }
 }

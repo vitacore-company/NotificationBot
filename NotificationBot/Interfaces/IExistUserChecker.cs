@@ -2,6 +2,6 @@
 {
     public interface IExistUserChecker
     {
-        public bool CheckExistUser(long userId);
+        public Task<bool> CheckExistUser(long userId);
     }
 }

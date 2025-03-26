@@ -1,4 +1,5 @@
-﻿using Microsoft.VisualStudio.Services.ServiceHooks.WebApi;
+﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Services.ServiceHooks.WebApi;
 using Newtonsoft.Json;
 using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
@@ -8,7 +9,6 @@ using NotificationsBot.Utils;
 using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
-using User = NotificationsBot.Models.User;
 
 namespace NotificationsBot.Interfaces.Impl;
 
@@ -103,8 +103,8 @@ public class TelegramNotificationService : INotificationService
     /// <returns></returns>
     private Task PullRequestCreatedNotify(PullRequestCreatedResource resource, string message)
     {
-        HashSet<string> users = resource.reviewers.Select(reviewer => reviewer.uniqueName.ToLower())?.ToHashSet() ?? new HashSet<string>();
-        users.Add(resource.createdBy.uniqueName.ToLower());
+        HashSet<string> users = resource.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
+        users.Add(resource.createdBy.uniqueName);
         List<long> chatIds = GetChatIds(users.ToList());
         foreach (long chatId in chatIds)
         {
@@ -121,9 +121,9 @@ public class TelegramNotificationService : INotificationService
     /// <returns></returns>
     private Task PullRequestCommentNotify(PullRequestCommentedResource resource, string message)
     {
-        HashSet<string> users = resource.pullRequest.reviewers.Select(reviewer => reviewer.uniqueName.ToLower())?.ToHashSet() ?? new HashSet<string>();
-        users.Add(resource.comment.author.uniqueName.ToLower());
-        users.Add(resource.pullRequest.createdBy.uniqueName.ToLower());
+        HashSet<string> users = resource.pullRequest.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
+        users.Add(resource.comment.author.uniqueName);
+        users.Add(resource.pullRequest.createdBy.uniqueName);
         List<long> chatIds = GetChatIds(users.ToList());
         foreach (long chatId in chatIds)
         {
@@ -151,7 +151,7 @@ public class TelegramNotificationService : INotificationService
             user = Utilites.GetUniqueUser(resource.Fields["System.AssignedTo"]);
         }
 
-        users.Add(user.ToString().ToLower());
+        users.Add(user.ToString());
         List<long> chatIds = GetChatIds(users.ToList());
         if (chatIds.Count > 0)
         {
@@ -172,7 +172,7 @@ public class TelegramNotificationService : INotificationService
     {
         HashSet<string> users = new HashSet<string>();
 
-        users.Add(resource.requestedBy.uniqueName.ToLower());
+        users.Add(resource.requestedBy.uniqueName);
         List<long> chatIds = GetChatIds(users.ToList());
 
         if (chatIds.Count > 0)
@@ -186,7 +186,8 @@ public class TelegramNotificationService : INotificationService
 
     private List<long> GetChatIds(List<string> displayNames)
     {
-        List<User> users = _appContext.Users.Where(user => displayNames.Contains(user.Login ?? string.Empty)).ToList();
+        var users = _appContext.Users.Where(b => displayNames.Any(pattern => EF.Functions.ILike(b.Login, "%" + pattern + "%"))).ToList();
+
         if (users.Count == 0)
             return new List<long>();
         return users.Select(user => user.ChatId).ToList();

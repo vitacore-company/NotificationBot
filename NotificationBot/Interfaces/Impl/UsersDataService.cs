@@ -73,7 +73,7 @@ public class UsersDataService : IUsersDataService
     /// <param name="login">Логин.</param>
     /// <param name="chatId">Идентификатор чата.</param>
     /// <returns></returns>
-    public Task SaveNewUser(string? login, long chatId)
+    public Task SaveNewUser(string? login, long chatId, long userId)
     {
         _context.Users.Add(new Models.User() { ChatId = chatId, Login = login });
         _context.SaveChanges();
