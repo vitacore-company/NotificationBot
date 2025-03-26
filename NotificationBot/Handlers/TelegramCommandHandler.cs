@@ -66,14 +66,21 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 
                         switch (update.CallbackQuery.Data)
                         {
+                            case "loginChangeButton":
+                                {
+                                    await _botClient.SendMessage(message.Chat, "Введите новый логин (пример DEV\\Name.Surname)");
+                                    await _usersDataService.ChangeStatus(message.Chat.Id, "/changeLogin");
+                                }
+                                break;
+
                             case "registerButton":
                                 {
-                                    await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id);
-
                                     await _botClient.SendMessage(message.Chat, "Введите логин (пример DEV\\Name.Surname)");
                                 }
                                 break;
                         }
+
+                        await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id);
                     }
                 }
                 break;
@@ -130,25 +137,47 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         {
             case "/start":
                 {
-                    if (!await _usersDataService.IsContainUser(msg.Chat.Id) && await _userChecker.CheckExistUser(msg.From.Id))
+                    if (await _userChecker.CheckExistUser(msg.From.Id))
                     {
-                        await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From.Id);
-                        await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
-
-                        var inlineKeyboard = new InlineKeyboardMarkup(
-                        new List<InlineKeyboardButton[]>()
+                        if (!await _usersDataService.IsContainUser(msg.Chat.Id))
                         {
+                            await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From.Id);
+                            await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
+
+                            var inlineKeyboard = new InlineKeyboardMarkup(
+                            new List<InlineKeyboardButton[]>()
+                            {
                             new InlineKeyboardButton[] // тут создаем массив кнопок
                             {
                                  InlineKeyboardButton.WithCallbackData("Регистрация", "registerButton"),
                             }
-                        });
+                            });
 
-                        await _botClient.SendMessage(
-                            msg.Chat.Id,
-                            "Выберите действие",
-                            parseMode: ParseMode.MarkdownV2,
-                            replyMarkup: inlineKeyboard);
+                            await _botClient.SendMessage(
+                                msg.Chat.Id,
+                                "Выберите действие",
+                                parseMode: ParseMode.MarkdownV2,
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else
+                        {
+                            await _botClient.SendMessage(msg.Chat, "Вы уже авторизированы");
+
+                            var inlineKeyboard = new InlineKeyboardMarkup(
+                            new List<InlineKeyboardButton[]>()
+                            {
+                            new InlineKeyboardButton[] // тут создаем массив кнопок
+                            {
+                                 InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"),
+                            }
+                            });
+
+                            await _botClient.SendMessage(
+                                msg.Chat.Id,
+                                "Выберите действие",
+                                parseMode: ParseMode.MarkdownV2,
+                                replyMarkup: inlineKeyboard);
+                        }
                     }
 
                 }
@@ -178,6 +207,14 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                 {
                     await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id);
                     await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
+                    await _usersDataService.CancelStatus(msg.Chat.Id);
+                }
+                break;
+
+            case "/changeLogin":
+                {
+                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id, msg.From.Id);
+                    await _botClient.SendMessage(msg.Chat, "Логин изменен");
                     await _usersDataService.CancelStatus(msg.Chat.Id);
                 }
                 break;

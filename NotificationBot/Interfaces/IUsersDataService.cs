@@ -20,6 +20,13 @@ public interface IUsersDataService
     /// <returns></returns>
     public Task UpdateUser(string newLogin, long chatId);
     /// <summary>
+    /// Обновляет пользователя.
+    /// </summary>
+    /// <param name="newLogin">Новый логин.</param>
+    /// <param name="chatId">Идентификатор чата.</param>
+    /// <returns></returns>
+    public Task UpdateUser(string? newLogin, long chatId, long? userId);
+    /// <summary>
     /// Определяет, есть ли [пользователь] с [указанный идентификатор чата].
     /// </summary>
     /// <param name="chatId">Идентификатор чата.</param>
