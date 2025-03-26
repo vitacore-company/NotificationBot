@@ -130,9 +130,9 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         {
             case "/start":
                 {
-                    if (!await _usersDataService.IsContainUser(msg.Chat.Id) && _userChecker.CheckExistUser(msg.From.Id))
+                    if (!await _usersDataService.IsContainUser(msg.Chat.Id) && await _userChecker.CheckExistUser(msg.From.Id))
                     {
-                        await _usersDataService.SaveNewUser(null, msg.Chat.Id);
+                        await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From.Id);
                         await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
 
                         var inlineKeyboard = new InlineKeyboardMarkup(
@@ -176,7 +176,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
             case "/register":
                 if (_usersDataService.IsContainUser(msg.Chat.Id).Result && msg.Text != null)
                 {
-                    await _usersDataService.UpdateUser(msg.Text.ToLower(), msg.Chat.Id);
+                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id);
                     await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
                     await _usersDataService.CancelStatus(msg.Chat.Id);
                 }
