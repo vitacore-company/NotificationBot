@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore;
-using NotificationsBot.Models;
+﻿using NotificationsBot.Models;
 using System.Diagnostics.CodeAnalysis;
 
 namespace NotificationsBot.Interfaces.Impl;
@@ -62,7 +61,7 @@ public class UsersDataService : IUsersDataService
     public async Task<bool> IsContainUser(long chatId)
     {
         User? user = await _context.Users.FindAsync(chatId);
-        if(user != null)
+        if (user != null)
             return true;
         return false;
     }
@@ -72,10 +71,11 @@ public class UsersDataService : IUsersDataService
     /// </summary>
     /// <param name="login">Логин.</param>
     /// <param name="chatId">Идентификатор чата.</param>
+    /// <param name="userId">Идентификатор Телеграм аккаунта.</param>
     /// <returns></returns>
     public Task SaveNewUser(string? login, long chatId, long userId)
     {
-        _context.Users.Add(new Models.User() { ChatId = chatId, Login = login });
+        _context.Users.Add(new Models.User() { ChatId = chatId, Login = login, UserId = userId });
         _context.SaveChanges();
         return Task.CompletedTask;
     }
@@ -89,9 +89,23 @@ public class UsersDataService : IUsersDataService
     /// <exception cref="System.Exception">Не найден пользователь</exception>
     public Task UpdateUser(string newLogin, long chatId)
     {
+        return UpdateUser(newLogin, chatId, null);
+    }
+
+    /// <summary>
+    /// Обновляет пользователя.
+    /// </summary>
+    /// <param name="newLogin">Новый логин.</param>
+    /// <param name="chatId">Идентификатор чата.</param>
+    /// <param name="userId">Идентификатор Телеграм аккаунта.</param>
+    /// <returns></returns>
+    /// <exception cref="System.Exception">Не найден пользователь</exception>
+    public Task UpdateUser(string? newLogin, long chatId, long? userId)
+    {
         User user = _context.Users.Find(chatId)
             ?? throw new Exception("Не найден пользователь");
-        user.Login = newLogin;
+        user.Login = newLogin ?? user.Login;
+        user.UserId = userId ?? user.UserId;
         _context.Users.Update(user);
         _context.SaveChanges();
         return Task.CompletedTask;
