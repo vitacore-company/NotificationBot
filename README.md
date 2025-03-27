@@ -1,4 +1,5 @@
 ﻿# NotificationBot
+ [![Docker Image on tag](https://github.com/vitacore-company/NotificationBot/actions/workflows/ci_on_tag.yml/badge.svg?branch=master)](https://github.com/vitacore-company/NotificationBot/actions/workflows/ci_on_tag.yml)
 ## Что это и для чего?
 Это телеграмм бот для уведомлений о событиях в Azure DevOps 2022
 ## Запуск
