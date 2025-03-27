@@ -1,22 +1,11 @@
 ﻿using System.Text.Json;
 using System.Text.Json.Serialization;
+using Telegram.Bot.Extensions;
 
 namespace NotificationsBot.Utils
 {
     public static class Utilites
     {
-        public static object GetUniqueUser(object user)
-        {
-            if (user is not string str)
-            {
-                str = user.ToString();
-            }
-
-            int startIndex = str.IndexOf("<") + 1;
-            int endIndex = str.IndexOf(">");
-            return str.Substring(startIndex, endIndex - startIndex);
-        }
-
         public static async Task<T> ToObject<T>(this HttpResponseMessage response)
         {
             string responseAsString = await response.Content.ReadAsStringAsync();
@@ -27,6 +16,24 @@ namespace NotificationsBot.Utils
             });
 
             return responseObject;
+        }
+
+        public static string PullRequestLinkConfigure(string project, string repoName, int pullrequestId, string linkLabel)
+        {
+            string configLink = Markdown.Escape($"https://tfs.dev.vitacore.ru/tfs/{project}/_git/{repoName}/pullrequest/{pullrequestId}");
+
+            string link = $"[{linkLabel}]({configLink})";
+
+            return link;
+        }
+
+        public static string WorkItemLinkConfigure(string project, string itemId, string linkLabel)
+        {
+            string configLink = Markdown.Escape($"https://tfs.dev.vitacore.ru/tfs/{project}/_workitems/edit/{itemId}");
+
+            string link = $"[{linkLabel}]({configLink})";
+
+            return link;
         }
     }
 }

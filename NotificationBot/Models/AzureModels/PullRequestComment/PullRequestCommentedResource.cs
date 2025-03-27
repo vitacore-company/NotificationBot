@@ -1,9 +1,17 @@
-﻿using NotificationsBot.Models.AzureModels.PullRequestCreated;
+﻿using Microsoft.AspNet.WebHooks.Payloads;
+using Newtonsoft.Json;
 
 namespace NotificationsBot.Models.AzureModels.PullRequestComment;
-//todo ненужная хуйня,Возможно, нужно проверить
-public class PullRequestCommentedResource
+public class PullRequestCommentedResource : BaseResource
 {
-    public PullRequestCreatedResource pullRequest { get; set; }
+    [JsonProperty("pullRequest")]
+    public GitPullRequestResource pullRequest { get; set; }
+
+    [JsonProperty("comment")]
     public Comment comment { get; set; }
 }
+
+public class PullRequestCommentedPayload : BasePayload<PullRequestCommentedResource>
+{
+}
+

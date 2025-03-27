@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.Services.ServiceHooks.WebApi;
+using System.Text.Json;
 
 namespace NotificationsBot.Interfaces;
 
@@ -15,5 +16,5 @@ public interface INotificationService
     /// <remarks>
     /// <see href="https://learn.microsoft.com/en-us/azure/devops/service-hooks/events?view=azure-devops">Типы событий</see>
     /// </remarks>
-    public Task Notify(Event eventNotification);
+    public Task Notify(JsonElement element, string eventType);
 }
