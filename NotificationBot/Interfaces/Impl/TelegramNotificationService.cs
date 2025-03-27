@@ -28,62 +28,56 @@ public class TelegramNotificationService : INotificationService
 
     public Task Notify(JsonElement element, string eventType)
     {
-        try
+
+        switch (eventType)
         {
-            switch (eventType)
-            {
-                case "git.pullrequest.updated":
-                    {
-                        GitPullRequestUpdatedPayload? updated = JsonConvert.DeserializeObject<GitPullRequestUpdatedPayload>(element.ToString());
+            case "git.pullrequest.updated":
+                {
+                    GitPullRequestUpdatedPayload? updated = JsonConvert.DeserializeObject<GitPullRequestUpdatedPayload>(element.ToString());
 
-                        PullRequestUpdatedNotify(updated);
-                    }
-                    break;
+                    PullRequestUpdatedNotify(updated);
+                }
+                break;
 
-                case "ms.vss-code.git-pullrequest-comment-event":
-                    {
-                        PullRequestCommentedPayload? pullRequestCommented = JsonConvert.DeserializeObject<PullRequestCommentedPayload>(element.ToString());
+            case "ms.vss-code.git-pullrequest-comment-event":
+                {
+                    PullRequestCommentedPayload? pullRequestCommented = JsonConvert.DeserializeObject<PullRequestCommentedPayload>(element.ToString());
 
-                        PullRequestCommentNotify(pullRequestCommented);
-                    }
-                    break;
+                    PullRequestCommentNotify(pullRequestCommented);
+                }
+                break;
 
-                case "git.pullrequest.created":
-                    {
-                        GitPullRequestCreatedPayload? created = JsonConvert.DeserializeObject<GitPullRequestCreatedPayload>(element.ToString());
+            case "git.pullrequest.created":
+                {
+                    GitPullRequestCreatedPayload? created = JsonConvert.DeserializeObject<GitPullRequestCreatedPayload>(element.ToString());
 
-                        PullRequestCreatedNotify(created);
-                    }
-                    break;
+                    PullRequestCreatedNotify(created);
+                }
+                break;
 
-                case "workitem.created":
-                    {
-                        WorkItemCreatedCustomPayload? created = JsonConvert.DeserializeObject<WorkItemCreatedCustomPayload>(element.ToString());
+            case "workitem.created":
+                {
+                    WorkItemCreatedCustomPayload? created = JsonConvert.DeserializeObject<WorkItemCreatedCustomPayload>(element.ToString());
 
-                        WorkItemCreatedNotify(created);
-                    }
-                    break;
+                    WorkItemCreatedNotify(created);
+                }
+                break;
 
-                case "workitem.updated":
-                    {
-                        WorkItemUpdatedCustomPayload? updated = JsonConvert.DeserializeObject<WorkItemUpdatedCustomPayload>(element.ToString());
+            case "workitem.updated":
+                {
+                    WorkItemUpdatedCustomPayload? updated = JsonConvert.DeserializeObject<WorkItemUpdatedCustomPayload>(element.ToString());
 
-                        WorkItemUpdatedNotify(updated);
-                    }
-                    break;
+                    WorkItemUpdatedNotify(updated);
+                }
+                break;
 
-                case "build.complete":
-                    {
-                        BuildCompletedPayload? build = JsonConvert.DeserializeObject<BuildCompletedPayload>(element.ToString());
+            case "build.complete":
+                {
+                    BuildCompletedPayload? build = JsonConvert.DeserializeObject<BuildCompletedPayload>(element.ToString());
 
-                        BuildStateChangedNotify(build);
-                    }
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-            throw new Exception(ex.Message);
+                    BuildStateChangedNotify(build);
+                }
+                break;
         }
 
         return Task.CompletedTask;
