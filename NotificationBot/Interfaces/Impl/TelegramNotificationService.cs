@@ -1,12 +1,11 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualStudio.Services.ServiceHooks.WebApi;
+﻿using Microsoft.AspNet.WebHooks.Payloads;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
-using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
-using NotificationsBot.Models.AzureModels.PullRequestCreated;
-using NotificationsBot.Models.AzureModels.WorkItemCreated;
 using NotificationsBot.Utils;
+using System.Text;
 using System.Text.Json;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
 
@@ -27,71 +26,66 @@ public class TelegramNotificationService : INotificationService
         _telegramBotClient = telegramBotClient;
     }
 
-    /// <summary>
-    /// <inheritdoc/>
-    /// </summary>
-    /// <param name="eventNotification">Уведомление о событии.</param>
-    /// <returns></returns>
-    /// <remarks>
-    /// <see href="https://learn.microsoft.com/en-us/azure/devops/service-hooks/events?view=azure-devops">Типы событий</see>
-    /// </remarks>
-    public Task Notify(Event eventNotification)
+    public Task Notify(JsonElement element, string eventType)
     {
-        if (eventNotification.Resource == null)
+        try
         {
-            return Task.CompletedTask;
+            switch (eventType)
+            {
+                case "git.pullrequest.updated":
+                    {
+                        GitPullRequestUpdatedPayload? updated = JsonConvert.DeserializeObject<GitPullRequestUpdatedPayload>(element.ToString());
+
+                        PullRequestUpdatedNotify(updated);
+                    }
+                    break;
+
+                case "ms.vss-code.git-pullrequest-comment-event":
+                    {
+                        PullRequestCommentedPayload? pullRequestCommented = JsonConvert.DeserializeObject<PullRequestCommentedPayload>(element.ToString());
+
+                        PullRequestCommentNotify(pullRequestCommented);
+                    }
+                    break;
+
+                case "git.pullrequest.created":
+                    {
+                        GitPullRequestCreatedPayload? created = JsonConvert.DeserializeObject<GitPullRequestCreatedPayload>(element.ToString());
+
+                        PullRequestCreatedNotify(created);
+                    }
+                    break;
+
+                case "workitem.created":
+                    {
+                        WorkItemCreatedCustomPayload? created = JsonConvert.DeserializeObject<WorkItemCreatedCustomPayload>(element.ToString());
+
+                        WorkItemCreatedNotify(created);
+                    }
+                    break;
+
+                case "workitem.updated":
+                    {
+                        WorkItemUpdatedCustomPayload? updated = JsonConvert.DeserializeObject<WorkItemUpdatedCustomPayload>(element.ToString());
+
+                        WorkItemUpdatedNotify(updated);
+                    }
+                    break;
+
+                case "build.complete":
+                    {
+                        BuildCompletedPayload? build = JsonConvert.DeserializeObject<BuildCompletedPayload>(element.ToString());
+
+                        BuildStateChangedNotify(build);
+                    }
+                    break;
+            }
         }
-        string resultMessage = string.Empty;
-        switch (eventNotification.EventType)
+        catch (Exception ex)
         {
-            case "git.push"://Code is pushed to a Git repository.
-                break;
-            case "git.pullrequest.created"://A pull request is created in a Git repository.
-                PullRequestCreatedResource resource = ((JsonElement)eventNotification.Resource).Deserialize<PullRequestCreatedResource>() ??
-                    throw new InvalidOperationException(); ;
-                PullRequestCreatedNotify(resource, eventNotification.DetailedMessage.Markdown);
-                break;
-            case "git.pullrequest.merge.attempted"://A pull request merge is attempted in a Git repository.
-                break;
-            case "git.pullrequest.approved":// A merge commit is approved on a pull request.
-                break;
-            case "git.pullrequest.updated"://Pull request updated
-                PullRequestCreatedNotify(
-                    ((JsonElement)eventNotification.Resource).Deserialize<PullRequestCreatedResource>() ??
-                    throw new InvalidOperationException(),
-                    eventNotification.DetailedMessage.Markdown
-                    );
-                break;
-            case "ms.vss-code.git-pullrequest-comment-event"://Pull request commented on
-                PullRequestCommentNotify(
-                    ((JsonElement)eventNotification.Resource).Deserialize<PullRequestCommentedResource>() ??
-                    throw new InvalidOperationException(),
-                    eventNotification.DetailedMessage.Markdown
-                    );
-                break;
-            case "workitem.created"://Work item created
-                WorkItemCreatedNotify(
-                    JsonConvert.DeserializeObject<WorkItemCreatedResource>(eventNotification.Resource.ToString()),
-                    eventNotification.DetailedMessage.Markdown
-                    );
-                break;
-            case "workitem.deleted"://Work item deleted
-                break;
-            case "workitem.restored"://A work item is newly restored.
-                break;
-            case "workitem.updated"://A work item is changed.
-                break;
-            case "workitem.commented":// A work item is commented on.
-                break;
-            case "build.complete": // build stage changed (success, fail)
-                {
-                    BuildStateChangedNotify(
-                    JsonConvert.DeserializeObject<BuildStateChangedResource>(eventNotification.Resource.ToString()),
-                    eventNotification.DetailedMessage.Markdown
-                    );
-                }
-                break;
+            throw new Exception(ex.Message);
         }
+
         return Task.CompletedTask;
     }
 
@@ -101,15 +95,23 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task PullRequestCreatedNotify(PullRequestCreatedResource resource, string message)
+    private Task PullRequestCreatedNotify(GitPullRequestCreatedPayload resource)
     {
-        HashSet<string> users = resource.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
-        users.Add(resource.createdBy.uniqueName);
+        HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
         List<long> chatIds = GetChatIds(users.ToList());
+
+        string message = FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString())) + Environment.NewLine
+            + $"Project: {resource.Resource.Repository.Name}" + Environment.NewLine +
+            $"Title: {resource.Resource.Title}" + Environment.NewLine +
+            $"Description: {Environment.NewLine} {resource.Resource.Description}");
+
+        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+
         foreach (long chatId in chatIds)
         {
-            _telegramBotClient.SendMessage(chatId, FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+            _telegramBotClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
+
         return Task.CompletedTask;
     }
 
@@ -119,44 +121,153 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task PullRequestCommentNotify(PullRequestCommentedResource resource, string message)
+    private Task PullRequestUpdatedNotify(GitPullRequestUpdatedPayload resource)
     {
-        HashSet<string> users = resource.pullRequest.reviewers.Select(reviewer => reviewer.uniqueName)?.ToHashSet() ?? new HashSet<string>();
-        users.Add(resource.comment.author.uniqueName);
-        users.Add(resource.pullRequest.createdBy.uniqueName);
+        HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+
         List<long> chatIds = GetChatIds(users.ToList());
+
+        string message = FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString())) + Environment.NewLine
+            + $"Project: {resource.Resource.Repository.Name}" + Environment.NewLine +
+            $"Title: {resource.Resource.Title}" + Environment.NewLine +
+            $"Description: {resource.Resource.Description}");
+
+        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+
         foreach (long chatId in chatIds)
         {
-            _telegramBotClient.SendMessage(chatId, FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+            _telegramBotClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
+
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Отправь уведомление о комментарии в PR.
+    /// </summary>
+    /// <param name="resource">Данные о событии</param>
+    /// <param name="message">Сообщение.</param>
+    /// <returns></returns>
+    private Task PullRequestCommentNotify(PullRequestCommentedPayload resource)
+    {
+        HashSet<string> users = resource.Resource.pullRequest.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+        string author = resource.Resource.comment.author.uniqueName;
+
+        users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
+        List<long> chatIds = GetChatIds(users.ToList());
+
+        string message = FormatMarkdownToTelegram(resource.Message.Text + Environment.NewLine
+            + $"Project: {resource.Resource.pullRequest.Repository.Name}" + Environment.NewLine +
+            $"Title: {resource.Resource.pullRequest.Title}" + Environment.NewLine +
+            $"Description: {resource.Resource.pullRequest.Description}" + Environment.NewLine +
+            $"{Environment.NewLine}{resource.Resource.comment.content}");
+
+        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
+
+        foreach (long chatId in chatIds)
+        {
+            _telegramBotClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+        }
+
         return Task.CompletedTask;
     }
 
     /// <summary>
     /// Отправь уведомление о создании рабочего элемента.
     /// </summary>
-    /// <param name="resource">Данные о событии</param>
-    /// <param name="message">Сообщение.</param>
-    /// <returns></returns>
-    private Task WorkItemCreatedNotify(WorkItemCreatedResource resource, string message)
+    /// <param name = "resource" > Данные о событии</param>
+    /// <param name = "message" > Сообщение.</ param >
+    /// < returns ></ returns >
+    private Task WorkItemCreatedNotify(WorkItemCreatedCustomPayload resource)
     {
-        HashSet<string> users = new HashSet<string>();
-        if (!resource.Fields.TryGetValue("uniqueName", out object user))
-        {
-            if (!resource.Fields.ContainsKey("System.AssignedTo"))
-            {
-                return Task.CompletedTask;
-            }
+        Match matchItemId = Regex.Match(resource.Message.Text, @"#(\d+)");
 
-            user = Utilites.GetUniqueUser(resource.Fields["System.AssignedTo"]);
+        if (matchItemId.Success)
+        {
+            string itemId = matchItemId.Groups[1].Value;
+
+            HashSet<string> users = new HashSet<string>();
+            users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
+
+            List<long> chatIds = GetChatIds(users.ToList());
+
+            string message = FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}" + Environment.NewLine
+                + $"Project: {resource.Resource.Fields.SystemTeamProject}" + Environment.NewLine +
+                $"Title: {resource.Resource.Fields.SystemTitle}" + Environment.NewLine +
+                $"State: {resource.Resource.Fields.SystemState}" + Environment.NewLine +
+                $"Assigned to: {resource.Resource.Fields.SystemAssignedTo.DisplayName}" + Environment.NewLine);
+
+            message = message.Replace($"{resource.Resource.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Fields.SystemTeamProject, itemId, resource.Resource.Fields.SystemWorkItemType));
+
+            if (chatIds.Count > 0)
+            {
+                _telegramBotClient.SendMessage(chatIds.First(), message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+            }
         }
 
-        users.Add(user.ToString());
-        List<long> chatIds = GetChatIds(users.ToList());
-        if (chatIds.Count > 0)
-        {
-            _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+        return Task.CompletedTask;
+    }
 
+    /// <summary>
+    /// Отправь уведомление о создании рабочего элемента.
+    /// </summary>
+    /// <param name = "resource" > Данные о событии</param>
+    /// <param name = "message" > Сообщение.</ param >
+    /// < returns ></ returns >
+    private Task WorkItemUpdatedNotify(WorkItemUpdatedCustomPayload resource)
+    {
+        if (resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
+        {
+            return Task.CompletedTask;
+        }
+
+        if (resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName.Equals(resource.Resource.Revision.Fields.SystemChangedBy.UniqueName))
+        {
+            return Task.CompletedTask;
+        }
+
+        Match matchItemId = Regex.Match(resource.Message.Text, @"#(\d+)");
+
+        if (matchItemId.Success)
+        {
+            HashSet<string> users = new HashSet<string>();
+
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed");
+            sb.AppendLine($"Project: {resource.Resource.Revision.Fields.SystemTeamProject}");
+            sb.AppendLine($"Title: {resource.Resource.Revision.Fields.SystemTitle}");
+            sb.AppendLine($"State: {resource.Resource.Revision.Fields.SystemState}");
+
+            string messageText = FormatMarkdownToTelegram(sb.ToString());
+
+            if (resource.Resource.Fields.SystemAssignedTo != null)
+            {
+                messageText = messageText + Environment.NewLine + ($"New Assigned to: {resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName}" + Environment.NewLine +
+                $"~Old Assigned to: {resource.Resource.Fields.SystemAssignedTo.OldValue.DisplayName}~");
+
+                users.Add(resource.Resource.Fields.SystemAssignedTo.NewValue.UniqueName);
+            }
+            if (resource.Resource.Fields.MicrosoftVSTSCommonPriority != null)
+            {
+                messageText = messageText + Environment.NewLine + ($"New Priority: {resource.Resource.Fields.MicrosoftVSTSCommonPriority.NewValue}" + Environment.NewLine +
+                $"~Old Priority: {resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue}~");
+
+                if (!users.Any())
+                {
+                    users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
+                }
+            }
+
+            string itemId = matchItemId.Groups[1].Value;
+
+            messageText = messageText.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
+
+            List<long> chatIds = GetChatIds(users.ToList());
+
+            if (chatIds.Count > 0)
+            {
+                _telegramBotClient.SendMessage(chatIds.First(), messageText, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+            }
         }
 
         return Task.CompletedTask;
@@ -168,17 +279,16 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task BuildStateChangedNotify(BuildStateChangedResource resource, string message)
+    private Task BuildStateChangedNotify(BuildCompletedPayload resource)
     {
         HashSet<string> users = new HashSet<string>();
 
-        users.Add(resource.requestedBy.uniqueName);
+        users.Add(resource.Resource.LastChangedBy.UniqueName);
         List<long> chatIds = GetChatIds(users.ToList());
 
         if (chatIds.Count > 0)
         {
-            _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(message), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-
+            _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
 
         return Task.CompletedTask;

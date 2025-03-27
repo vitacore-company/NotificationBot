@@ -1,6 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.VisualStudio.Services.ServiceHooks.WebApi;
+﻿using Microsoft.AspNet.WebHooks.Payloads;
+using Microsoft.AspNetCore.Mvc;
 using NotificationsBot.Interfaces;
+using System.Text.Json;
 
 namespace NotificationsBot.Controllers;
 
@@ -16,9 +17,11 @@ public class ServiceHookController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<ActionResult> Notification([FromBody] Event value)
+    public async Task<ActionResult> Notification([FromBody] JsonElement value)
     {
-        await _notificationService.Notify(value);
+        string eventType = value.GetProperty("eventType").ToString();
+
+        await _notificationService.Notify(value, eventType);
         return Accepted();
     }
 }
