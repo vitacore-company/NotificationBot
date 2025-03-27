@@ -99,7 +99,7 @@ public class TelegramNotificationService : INotificationService
             $"Title: {resource.Resource.Title}" + Environment.NewLine +
             $"Description: {Environment.NewLine} {resource.Resource.Description}");
 
-        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.PullRequestId, "pull request"));
+        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
 
         foreach (long chatId in chatIds)
         {
@@ -126,7 +126,7 @@ public class TelegramNotificationService : INotificationService
             $"Title: {resource.Resource.Title}" + Environment.NewLine +
             $"Description: {resource.Resource.Description}");
 
-        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.PullRequestId, "pull request"));
+        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
 
         foreach (long chatId in chatIds)
         {
@@ -156,7 +156,7 @@ public class TelegramNotificationService : INotificationService
             $"Description: {resource.Resource.pullRequest.Description}" + Environment.NewLine +
             $"{Environment.NewLine}{resource.Resource.comment.content}");
 
-        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
+        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
 
         foreach (long chatId in chatIds)
         {
