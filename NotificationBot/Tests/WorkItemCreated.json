@@ -1,0 +1,94 @@
+﻿{
+  "subscriptionId": "fcfac5db-f8f1-4649-8256-462307aa457b",
+  "notificationId": 4,
+  "id": "182dbae4-17f5-4400-8e94-0a151ed23494",
+  "eventType": "workitem.created",
+  "publisherId": "tfs",
+  "message": {
+    "text": "User Story #11429 (апрап) created by Danila S. Denisenko\r\n(https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11429)",
+    "html": "<a href=\"https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&amp;id=11429\">User Story #11429</a> (апрап) created by Danila S. Denisenko",
+    "markdown": "[User Story #11429](https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11429) (апрап) created by Danila S. Denisenko"
+  },
+  "detailedMessage": {
+    "text": "User Story #11429 (апрап) created by Danila S. Denisenko\r\n(https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11429)\r\n\r\n- Area: ISZL(agile)\r\n- Iteration: ISZL(agile)\\Sprint 6\r\n- State: New\r\n",
+    "html": "<a href=\"https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&amp;id=11429\">User Story #11429</a> (апрап) created by Danila S. Denisenko<ul>\r\n<li>Area: ISZL(agile)</li>\r\n<li>Iteration: ISZL(agile)\\Sprint 6</li>\r\n<li>State: New</li></ul>",
+    "markdown": "[User Story #11429](https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11429) (апрап) created by Danila S. Denisenko\r\n\r\n* Area: ISZL(agile)\r\n* Iteration: ISZL(agile)\\Sprint 6\r\n* State: New\r\n"
+  },
+  "resource": {
+    "id": 11429,
+    "rev": 1,
+    "fields": {
+      "System.AreaPath": "ISZL(agile)",
+      "System.TeamProject": "ISZL(agile)",
+      "System.IterationPath": "ISZL(agile)\\Sprint 6",
+      "System.WorkItemType": "User Story",
+      "System.State": "New",
+      "System.Reason": "New",
+      "System.AssignedTo": {
+        "displayName": "Danila S. Denisenko",
+        "url": "https://tfs.dev.vitacore.ru/tfs/_apis/Identities/b2d69784-8105-4072-bd0b-91c08bd6a75e",
+        "_links": { "avatar": { "href": "https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA" } },
+        "id": "b2d69784-8105-4072-bd0b-91c08bd6a75e",
+        "uniqueName": "DEV\\Danila.Denisenko",
+        "imageUrl": "https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA",
+        "descriptor": "win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA"
+      },
+      "System.CreatedDate": "2025-03-27T12:02:24.31Z",
+      "System.CreatedBy": {
+        "displayName": "Danila S. Denisenko",
+        "url": "https://tfs.dev.vitacore.ru/tfs/_apis/Identities/b2d69784-8105-4072-bd0b-91c08bd6a75e",
+        "_links": { "avatar": { "href": "https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA" } },
+        "id": "b2d69784-8105-4072-bd0b-91c08bd6a75e",
+        "uniqueName": "DEV\\Danila.Denisenko",
+        "imageUrl": "https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA",
+        "descriptor": "win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA"
+      },
+      "System.ChangedDate": "2025-03-27T12:02:24.31Z",
+      "System.ChangedBy": {
+        "displayName": "Danila S. Denisenko",
+        "url": "https://tfs.dev.vitacore.ru/tfs/_apis/Identities/b2d69784-8105-4072-bd0b-91c08bd6a75e",
+        "_links": { "avatar": { "href": "https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA" } },
+        "id": "b2d69784-8105-4072-bd0b-91c08bd6a75e",
+        "uniqueName": "DEV\\Danila.Denisenko",
+        "imageUrl": "https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA",
+        "descriptor": "win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMzgzMA"
+      },
+      "System.CommentCount": 0,
+      "System.Title": "апрап",
+      "System.BoardColumn": "New",
+      "System.BoardColumnDone": false,
+      "Microsoft.VSTS.Common.StateChangeDate": "2025-03-27T12:02:24.31Z",
+      "Microsoft.VSTS.Common.Priority": 2,
+      "Microsoft.VSTS.Common.ValueArea": "Business",
+      "Microsoft.VSTS.Scheduling.StoryPoints": 3.0,
+      "WEF_D884C30254BB4FD2BAA33AECAFE406F5_Kanban.Column": "New",
+      "WEF_D884C30254BB4FD2BAA33AECAFE406F5_Kanban.Column.Done": false
+    },
+    "_links": {
+      "self": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11429" },
+      "workItemUpdates": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11429/updates" },
+      "workItemRevisions": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11429/revisions" },
+      "workItemComments": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11429/comments" },
+      "html": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_workitems/edit/11429" },
+      "workItemType": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItemTypes/User%20Story" },
+      "fields": { "href": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/fields" }
+    },
+    "url": "https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11429"
+  },
+  "resourceVersion": "5.1-preview.3",
+  "resourceContainers": {
+    "collection": {
+      "id": "14ed7439-51c3-4522-8939-cc6e31156c6a",
+      "baseUrl": "https://tfs.dev.vitacore.ru/tfs/"
+    },
+    "server": {
+      "id": "ba7421f6-fa42-4018-85b5-f7c14112d595",
+      "baseUrl": "https://tfs.dev.vitacore.ru/"
+    },
+    "project": {
+      "id": "543bf3ae-27f7-4f5f-a28c-c7e5ffc85890",
+      "baseUrl": "https://tfs.dev.vitacore.ru/tfs/"
+    }
+  },
+  "createdDate": "2025-03-27T12:02:32.4498307Z"
+}

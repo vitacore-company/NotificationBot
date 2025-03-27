@@ -31,4 +31,7 @@ public class WorkItemCustomFields : WorkItemFields
 
     [JsonProperty("System.ChangedBy")]
     public new ResourceUser SystemChangedBy { get; set; }
+
+    [JsonProperty("Microsoft.VSTS.Common.Priority")]
+    public string MicrosoftVSTSCommonPriority { get; set; }
 }

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.WebHooks.Payloads;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Utils;
 using System.Text;
@@ -73,7 +74,7 @@ public class TelegramNotificationService : INotificationService
 
             case "build.complete":
                 {
-                    BuildCompletedPayload? build = JsonConvert.DeserializeObject<BuildCompletedPayload>(element.ToString());
+                    BuildStateChangedCustomPayload? build = JsonConvert.DeserializeObject<BuildStateChangedCustomPayload>(element.ToString());
 
                     BuildStateChangedNotify(build);
                 }
@@ -117,6 +118,11 @@ public class TelegramNotificationService : INotificationService
     /// <returns></returns>
     private Task PullRequestUpdatedNotify(GitPullRequestUpdatedPayload resource)
     {
+        if (resource.Message.Text.Contains("reviewer list"))
+        {
+            return Task.CompletedTask;
+        }
+
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
 
         List<long> chatIds = GetChatIds(users.ToList());
@@ -189,6 +195,7 @@ public class TelegramNotificationService : INotificationService
                 + $"Project: {resource.Resource.Fields.SystemTeamProject}" + Environment.NewLine +
                 $"Title: {resource.Resource.Fields.SystemTitle}" + Environment.NewLine +
                 $"State: {resource.Resource.Fields.SystemState}" + Environment.NewLine +
+                $"Priority: {resource.Resource.Fields.MicrosoftVSTSCommonPriority}" + Environment.NewLine +
                 $"Assigned to: {resource.Resource.Fields.SystemAssignedTo.DisplayName}" + Environment.NewLine);
 
             message = message.Replace($"{resource.Resource.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Fields.SystemTeamProject, itemId, resource.Resource.Fields.SystemWorkItemType));
@@ -236,15 +243,15 @@ public class TelegramNotificationService : INotificationService
 
             if (resource.Resource.Fields.SystemAssignedTo != null)
             {
-                messageText = messageText + Environment.NewLine + ($"New Assigned to: {resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName}" + Environment.NewLine +
-                $"~Old Assigned to: {resource.Resource.Fields.SystemAssignedTo.OldValue.DisplayName}~");
+                messageText = messageText + Environment.NewLine + ($"New Assigned to: {FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName)}" + Environment.NewLine +
+                $"~Old Assigned to: {FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue.DisplayName)}~");
 
                 users.Add(resource.Resource.Fields.SystemAssignedTo.NewValue.UniqueName);
             }
             if (resource.Resource.Fields.MicrosoftVSTSCommonPriority != null)
             {
-                messageText = messageText + Environment.NewLine + ($"New Priority: {resource.Resource.Fields.MicrosoftVSTSCommonPriority.NewValue}" + Environment.NewLine +
-                $"~Old Priority: {resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue}~");
+                messageText = messageText + Environment.NewLine + ($"New Priority: {FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.NewValue)}" + Environment.NewLine +
+                $"~Old Priority: {FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue)}~");
 
                 if (!users.Any())
                 {
@@ -273,11 +280,11 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task BuildStateChangedNotify(BuildCompletedPayload resource)
+    private Task BuildStateChangedNotify(BuildStateChangedCustomPayload resource)
     {
         HashSet<string> users = new HashSet<string>();
 
-        users.Add(resource.Resource.LastChangedBy.UniqueName);
+        users.Add(resource.Resource.RequestedBy.UniqueName);
         List<long> chatIds = GetChatIds(users.ToList());
 
         if (chatIds.Count > 0)
