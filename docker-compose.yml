@@ -2,6 +2,11 @@
   postgresql:
     container_name: postgres-latest
     image: postgres
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -d ${POSTGRES_DB} -U ${POSTGRES_USER}']
+      interval: 1s
+      timeout: 5s
+      retries: 10
     expose:
       - "${POSTGRES_EXPOSE_PORTS}"
     ports:
@@ -37,7 +42,7 @@
   notificationsbot:
     image: ${DOCKER_REGISTRY-}notificationsbot
     build:
-      context: NotaficationBot
+      context: NotificationBot
       dockerfile: Dockerfile
     ports:
       - ${HTTP_PORTS}
@@ -45,7 +50,8 @@
     networks:
       - network
     depends_on:
-      - postgresql
+      postgresql:
+          condition: service_healthy
     env_file:
       - path: ./.env
         required: false
