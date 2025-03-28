@@ -30,6 +30,7 @@ public static class ServiceExtension
         services.AddScoped<IUpdateHandler, TelegramCommandHandler>();
         services.AddScoped<ReceiverService>();
         services.AddScoped<IExistUserChecker, ExistUserChecker>();
+        services.AddScoped<IStartupTask, StartupTaskService>();
         services.AddHostedService<PollingService>();
 
 
@@ -107,6 +108,14 @@ public static class ServiceExtension
                 logger.LogError(ex, "An error occurred while migrating or seeding the database.");
                 throw;
             }
+        }
+
+        //запуск Startup сервисa
+        using (var scope = webApplication.Services.CreateScope())
+        {
+            IStartupTask? startupTask = scope.ServiceProvider.GetService<IStartupTask>();
+
+            startupTask.ExecuteAsync().Wait();
         }
 
         return webApplication;
