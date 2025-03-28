@@ -1,8 +1,8 @@
-﻿namespace NotificationsBot.Interfaces.Impl;
+﻿namespace NotificationsBot.Services.Background.Polling;
 
 /// <summary>
 /// <inheritdoc/>
 /// </summary>
-/// <seealso cref="NotificationsBot.Interfaces.Impl.PollingServiceBase&lt;NotificationsBot.Interfaces.Impl.ReceiverService&gt;" />
+/// <seealso cref="PollingServiceBase&lt;ReceiverService&gt;" />
 public class PollingService(IServiceProvider serviceProvider, ILogger<PollingService> logger)
     : PollingServiceBase<ReceiverService>(serviceProvider, logger);

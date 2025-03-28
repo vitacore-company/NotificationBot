@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.WebHooks.Payloads;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Utils;
@@ -10,33 +11,34 @@ using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
 
-namespace NotificationsBot.Interfaces.Impl;
+namespace NotificationsBot.Services;
 
 /// <summary>
 /// Сервис уведомления для телеграмм бота
 /// </summary>
-/// <seealso cref="NotificationsBot.Interfaces.INotificationService" />
+/// <seealso cref="INotificationService" />
 public class TelegramNotificationService : INotificationService
 {
     private readonly AppContext _appContext;
     private readonly ITelegramBotClient _telegramBotClient;
+    private readonly IUserHolder _userHolderService;
 
-    public TelegramNotificationService(AppContext appContext, ITelegramBotClient telegramBotClient)
+    public TelegramNotificationService(AppContext appContext, ITelegramBotClient telegramBotClient, IUserHolder userHolderService)
     {
         _appContext = appContext;
         _telegramBotClient = telegramBotClient;
+        _userHolderService = userHolderService;
     }
 
-    public Task Notify(JsonElement element, string eventType)
+    public async Task Notify(JsonElement element, string eventType)
     {
-
         switch (eventType)
         {
             case "git.pullrequest.updated":
                 {
                     GitPullRequestUpdatedPayload? updated = JsonConvert.DeserializeObject<GitPullRequestUpdatedPayload>(element.ToString());
 
-                    PullRequestUpdatedNotify(updated);
+                    await PullRequestUpdatedNotify(updated);
                 }
                 break;
 
@@ -44,7 +46,7 @@ public class TelegramNotificationService : INotificationService
                 {
                     PullRequestCommentedPayload? pullRequestCommented = JsonConvert.DeserializeObject<PullRequestCommentedPayload>(element.ToString());
 
-                    PullRequestCommentNotify(pullRequestCommented);
+                    await PullRequestCommentNotify(pullRequestCommented);
                 }
                 break;
 
@@ -52,7 +54,7 @@ public class TelegramNotificationService : INotificationService
                 {
                     GitPullRequestCreatedPayload? created = JsonConvert.DeserializeObject<GitPullRequestCreatedPayload>(element.ToString());
 
-                    PullRequestCreatedNotify(created);
+                    await PullRequestCreatedNotify(created);
                 }
                 break;
 
@@ -60,7 +62,7 @@ public class TelegramNotificationService : INotificationService
                 {
                     WorkItemCreatedCustomPayload? created = JsonConvert.DeserializeObject<WorkItemCreatedCustomPayload>(element.ToString());
 
-                    WorkItemCreatedNotify(created);
+                    await WorkItemCreatedNotify(created);
                 }
                 break;
 
@@ -68,7 +70,7 @@ public class TelegramNotificationService : INotificationService
                 {
                     WorkItemUpdatedCustomPayload? updated = JsonConvert.DeserializeObject<WorkItemUpdatedCustomPayload>(element.ToString());
 
-                    WorkItemUpdatedNotify(updated);
+                    await WorkItemUpdatedNotify(updated);
                 }
                 break;
 
@@ -76,12 +78,10 @@ public class TelegramNotificationService : INotificationService
                 {
                     BuildStateChangedCustomPayload? build = JsonConvert.DeserializeObject<BuildStateChangedCustomPayload>(element.ToString());
 
-                    BuildStateChangedNotify(build);
+                    await BuildStateChangedNotify(build);
                 }
                 break;
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -90,10 +90,10 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task PullRequestCreatedNotify(GitPullRequestCreatedPayload resource)
+    private async Task PullRequestCreatedNotify(GitPullRequestCreatedPayload resource)
     {
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
-        List<long> chatIds = GetChatIds(users.ToList());
+        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
@@ -114,8 +114,6 @@ public class TelegramNotificationService : INotificationService
         {
             _telegramBotClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -124,16 +122,16 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task PullRequestUpdatedNotify(GitPullRequestUpdatedPayload resource)
+    private async Task PullRequestUpdatedNotify(GitPullRequestUpdatedPayload resource)
     {
         if (resource.Message.Text.Contains("reviewer list"))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
 
-        List<long> chatIds = GetChatIds(users.ToList());
+        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
@@ -154,8 +152,6 @@ public class TelegramNotificationService : INotificationService
         {
             _telegramBotClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -164,13 +160,13 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task PullRequestCommentNotify(PullRequestCommentedPayload resource)
+    private async Task PullRequestCommentNotify(PullRequestCommentedPayload resource)
     {
         HashSet<string> users = resource.Resource.pullRequest.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
         string author = resource.Resource.comment.author.uniqueName;
 
         users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
-        List<long> chatIds = GetChatIds(users.ToList());
+        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text));
@@ -193,8 +189,6 @@ public class TelegramNotificationService : INotificationService
         {
             _telegramBotClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -203,7 +197,7 @@ public class TelegramNotificationService : INotificationService
     /// <param name = "resource" > Данные о событии</param>
     /// <param name = "message" > Сообщение.</ param >
     /// < returns ></ returns >
-    private Task WorkItemCreatedNotify(WorkItemCreatedCustomPayload resource)
+    private async Task WorkItemCreatedNotify(WorkItemCreatedCustomPayload resource)
     {
         Match matchItemId = Regex.Match(resource.Message.Text, @"#(\d+)");
 
@@ -214,7 +208,7 @@ public class TelegramNotificationService : INotificationService
             HashSet<string> users = new HashSet<string>();
             users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
 
-            List<long> chatIds = GetChatIds(users.ToList());
+            List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
@@ -243,8 +237,6 @@ public class TelegramNotificationService : INotificationService
                 _telegramBotClient.SendMessage(chatIds.First(), message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -253,16 +245,16 @@ public class TelegramNotificationService : INotificationService
     /// <param name = "resource" > Данные о событии</param>
     /// <param name = "message" > Сообщение.</ param >
     /// < returns ></ returns >
-    private Task WorkItemUpdatedNotify(WorkItemUpdatedCustomPayload resource)
+    private async Task WorkItemUpdatedNotify(WorkItemUpdatedCustomPayload resource)
     {
         if (resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
         {
-            return Task.CompletedTask;
+            return;
         }
 
         if (resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName.Equals(resource.Resource.Revision.Fields.SystemChangedBy.UniqueName))
         {
-            return Task.CompletedTask;
+            return;
         }
 
         Match matchItemId = Regex.Match(resource.Message.Text, @"#(\d+)");
@@ -314,15 +306,13 @@ public class TelegramNotificationService : INotificationService
 
             string messageText = sb.ToString();
 
-            List<long> chatIds = GetChatIds(users.ToList());
+            List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
             if (chatIds.Count > 0)
             {
                 _telegramBotClient.SendMessage(chatIds.First(), messageText, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
-
-        return Task.CompletedTask;
     }
 
     /// <summary>
@@ -331,28 +321,17 @@ public class TelegramNotificationService : INotificationService
     /// <param name="resource">Данные о событии</param>
     /// <param name="message">Сообщение.</param>
     /// <returns></returns>
-    private Task BuildStateChangedNotify(BuildStateChangedCustomPayload resource)
+    private async Task BuildStateChangedNotify(BuildStateChangedCustomPayload resource)
     {
         HashSet<string> users = new HashSet<string>();
 
         users.Add(resource.Resource.RequestedBy.UniqueName);
-        List<long> chatIds = GetChatIds(users.ToList());
+        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
         if (chatIds.Count > 0)
         {
             _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
-
-        return Task.CompletedTask;
-    }
-
-    private List<long> GetChatIds(List<string> displayNames)
-    {
-        var users = _appContext.Users.Where(b => displayNames.Any(pattern => EF.Functions.ILike(b.Login, "%" + pattern + "%"))).ToList();
-
-        if (users.Count == 0)
-            return new List<long>();
-        return users.Select(user => user.ChatId).ToList();
     }
 
     /// <summary>

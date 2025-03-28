@@ -1,6 +1,7 @@
-﻿using NotificationsBot.Utils;
+﻿using NotificationsBot.Interfaces;
+using NotificationsBot.Utils;
 
-namespace NotificationsBot.Interfaces.Impl
+namespace NotificationsBot.Services
 {
     public class ExistUserChecker : IExistUserChecker
     {
