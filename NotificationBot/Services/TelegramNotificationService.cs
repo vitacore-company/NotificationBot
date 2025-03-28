@@ -93,6 +93,13 @@ public class TelegramNotificationService : INotificationService
     private async Task PullRequestCreatedNotify(GitPullRequestCreatedPayload resource)
     {
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+        Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
+        if (match.Success)
+        {
+            string remove = match.Groups[1].Value;
+            users.RemoveWhere(x => x.Contains(remove));
+        }
+
         List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
         StringBuilder sb = new StringBuilder();
@@ -130,6 +137,12 @@ public class TelegramNotificationService : INotificationService
         }
 
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+        Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
+        if (match.Success)
+        {
+            string remove = match.Groups[1].Value;
+            users.RemoveWhere(x => x.Contains(remove));
+        }
 
         List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
@@ -199,6 +212,11 @@ public class TelegramNotificationService : INotificationService
     /// < returns ></ returns >
     private async Task WorkItemCreatedNotify(WorkItemCreatedCustomPayload resource)
     {
+        if (resource.Resource.Fields.SystemAssignedTo == null)
+        {
+            return;
+        }
+
         Match matchItemId = Regex.Match(resource.Message.Text, @"#(\d+)");
 
         if (matchItemId.Success)
