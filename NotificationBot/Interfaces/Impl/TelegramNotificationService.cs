@@ -95,12 +95,20 @@ public class TelegramNotificationService : INotificationService
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
         List<long> chatIds = GetChatIds(users.ToList());
 
-        string message = FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString())) + Environment.NewLine
-            + $"Project: {resource.Resource.Repository.Name}" + Environment.NewLine +
-            $"Title: {resource.Resource.Title}" + Environment.NewLine +
-            $"Description: {Environment.NewLine} {resource.Resource.Description}");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
+        sb.Append("*Project*: ");
+        sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
+        sb.AppendLine();
+        sb.Append("*Title*: ");
+        sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
+        sb.AppendLine();
+        sb.Append("*Description*: ");
+        sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
 
-        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+        sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+
+        string message = sb.ToString();
 
         foreach (long chatId in chatIds)
         {
@@ -127,12 +135,20 @@ public class TelegramNotificationService : INotificationService
 
         List<long> chatIds = GetChatIds(users.ToList());
 
-        string message = FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString())) + Environment.NewLine
-            + $"Project: {resource.Resource.Repository.Name}" + Environment.NewLine +
-            $"Title: {resource.Resource.Title}" + Environment.NewLine +
-            $"Description: {resource.Resource.Description}");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
+        sb.Append("*Project*: ");
+        sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
+        sb.AppendLine();
+        sb.Append("*Title*: ");
+        sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
+        sb.AppendLine();
+        sb.Append("*Description*: ");
+        sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
 
-        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+        sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+
+        string message = sb.ToString();
 
         foreach (long chatId in chatIds)
         {
@@ -156,13 +172,22 @@ public class TelegramNotificationService : INotificationService
         users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
         List<long> chatIds = GetChatIds(users.ToList());
 
-        string message = FormatMarkdownToTelegram(resource.Message.Text + Environment.NewLine
-            + $"Project: {resource.Resource.pullRequest.Repository.Name}" + Environment.NewLine +
-            $"Title: {resource.Resource.pullRequest.Title}" + Environment.NewLine +
-            $"Description: {resource.Resource.pullRequest.Description}" + Environment.NewLine +
-            $"{Environment.NewLine}{resource.Resource.comment.content}");
+        StringBuilder sb = new StringBuilder();
+        sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text));
+        sb.Append("*Project*: ");
+        sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name));
+        sb.AppendLine();
+        sb.Append("*Title*: ");
+        sb.Append(FormatMarkdownToTelegram(resource.Resource.pullRequest.Title));
+        sb.AppendLine();
+        sb.Append("*Description*: ");
+        sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.pullRequest.Description));
+        sb.AppendLine();
+        sb.AppendLine(resource.Resource.comment.content);
 
-        message = message.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
+        sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
+
+        string message = sb.ToString();
 
         foreach (long chatId in chatIds)
         {
@@ -191,14 +216,27 @@ public class TelegramNotificationService : INotificationService
 
             List<long> chatIds = GetChatIds(users.ToList());
 
-            string message = FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}" + Environment.NewLine
-                + $"Project: {resource.Resource.Fields.SystemTeamProject}" + Environment.NewLine +
-                $"Title: {resource.Resource.Fields.SystemTitle}" + Environment.NewLine +
-                $"State: {resource.Resource.Fields.SystemState}" + Environment.NewLine +
-                $"Priority: {resource.Resource.Fields.MicrosoftVSTSCommonPriority}" + Environment.NewLine +
-                $"Assigned to: {resource.Resource.Fields.SystemAssignedTo.DisplayName}" + Environment.NewLine);
+            StringBuilder sb = new StringBuilder();
+            sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
+            sb.Append("*Project*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTeamProject));
+            sb.AppendLine();
+            sb.Append("*Title*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTitle));
+            sb.AppendLine();
+            sb.Append("*State*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemState));
+            sb.AppendLine();
+            sb.Append("*Priority*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority));
+            sb.AppendLine();
+            sb.Append("*Assigned to*: ");
+            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.DisplayName));
+            sb.AppendLine();
 
-            message = message.Replace($"{resource.Resource.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Fields.SystemTeamProject, itemId, resource.Resource.Fields.SystemWorkItemType));
+            sb.Replace($"{resource.Resource.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Fields.SystemTeamProject, itemId, resource.Resource.Fields.SystemWorkItemType));
+
+            string message = sb.ToString();
 
             if (chatIds.Count > 0)
             {
@@ -234,24 +272,35 @@ public class TelegramNotificationService : INotificationService
             HashSet<string> users = new HashSet<string>();
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed");
-            sb.AppendLine($"Project: {resource.Resource.Revision.Fields.SystemTeamProject}");
-            sb.AppendLine($"Title: {resource.Resource.Revision.Fields.SystemTitle}");
-            sb.AppendLine($"State: {resource.Resource.Revision.Fields.SystemState}");
-
-            string messageText = FormatMarkdownToTelegram(sb.ToString());
+            sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed"));
+            sb.Append("*Project*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTeamProject));
+            sb.AppendLine();
+            sb.Append("*Title*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTitle));
+            sb.AppendLine();
+            sb.Append("*State*: ");
+            sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemState));
+            sb.AppendLine();
 
             if (resource.Resource.Fields.SystemAssignedTo != null)
             {
-                messageText = messageText + Environment.NewLine + ($"New Assigned to: {FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName)}" + Environment.NewLine +
-                $"~Old Assigned to: {FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue.DisplayName)}~");
+                sb.Append("*New Assigned to*: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName));
+                sb.AppendLine();
+                sb.Append("~Old Assigned to: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue.DisplayName) + "~");
+                sb.AppendLine();
 
                 users.Add(resource.Resource.Fields.SystemAssignedTo.NewValue.UniqueName);
             }
             if (resource.Resource.Fields.MicrosoftVSTSCommonPriority != null)
             {
-                messageText = messageText + Environment.NewLine + ($"New Priority: {FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.NewValue)}" + Environment.NewLine +
-                $"~Old Priority: {FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue)}~");
+                sb.Append("*New Priority*: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.NewValue));
+                sb.AppendLine();
+                sb.Append("~Old Priority: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue) + "~");
 
                 if (!users.Any())
                 {
@@ -261,7 +310,9 @@ public class TelegramNotificationService : INotificationService
 
             string itemId = matchItemId.Groups[1].Value;
 
-            messageText = messageText.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
+            sb.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
+
+            string messageText = sb.ToString();
 
             List<long> chatIds = GetChatIds(users.ToList());
 
