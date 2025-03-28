@@ -60,7 +60,9 @@ public class TelegramNotificationService : INotificationService
 
             case "workitem.created":
                 {
-                    WorkItemCreatedCustomPayload? created = JsonConvert.DeserializeObject<WorkItemCreatedCustomPayload>(element.ToString());
+                    string json = "{\r\n  \"subscriptionId\": \"a88c96ff-2faf-468b-90ae-4be73116b164\",\r\n  \"notificationId\": 25,\r\n  \"id\": \"ccf87ec5-2652-4739-8d2d-f58ef39d5995\",\r\n  \"eventType\": \"workitem.created\",\r\n  \"publisherId\": \"tfs\",\r\n  \"message\": {\r\n    \"text\": \"Task #11448 (Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения) created by Alexandr E. Plaksin\\r\\n(https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11448)\",\r\n    \"html\": \"<a href=\\\"https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&amp;id=11448\\\">Task #11448</a> (Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения) created by Alexandr E. Plaksin\",\r\n    \"markdown\": \"[Task #11448](https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11448) (Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения) created by Alexandr E. Plaksin\"\r\n  },\r\n  \"detailedMessage\": {\r\n    \"text\": \"Task #11448 (Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения) created by Alexandr E. Plaksin\\r\\n(https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11448)\\r\\n\\r\\n- Area: ISZL(agile)\\r\\n- Iteration: ISZL(agile)\\\\Sprint 6\\r\\n- State: New\\r\\n\",\r\n    \"html\": \"<a href=\\\"https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&amp;id=11448\\\">Task #11448</a> (Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения) created by Alexandr E. Plaksin<ul>\\r\\n<li>Area: ISZL(agile)</li>\\r\\n<li>Iteration: ISZL(agile)\\\\Sprint 6</li>\\r\\n<li>State: New</li></ul>\",\r\n    \"markdown\": \"[Task #11448](https://tfs.dev.vitacore.ru/web/wi.aspx?pcguid=14ed7439-51c3-4522-8939-cc6e31156c6a&id=11448) (Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения) created by Alexandr E. Plaksin\\r\\n\\r\\n* Area: ISZL(agile)\\r\\n* Iteration: ISZL(agile)\\\\Sprint 6\\r\\n* State: New\\r\\n\"\r\n  },\r\n  \"resource\": {\r\n    \"id\": 11448,\r\n    \"rev\": 1,\r\n    \"fields\": {\r\n      \"System.AreaPath\": \"ISZL(agile)\",\r\n      \"System.TeamProject\": \"ISZL(agile)\",\r\n      \"System.IterationPath\": \"ISZL(agile)\\\\Sprint 6\",\r\n      \"System.WorkItemType\": \"Task\",\r\n      \"System.State\": \"New\",\r\n      \"System.Reason\": \"New\",\r\n      \"System.CreatedDate\": \"2025-03-28T13:30:12.533Z\",\r\n      \"System.CreatedBy\": {\r\n        \"displayName\": \"Alexandr E. Plaksin\",\r\n        \"url\": \"https://tfs.dev.vitacore.ru/tfs/_apis/Identities/13ddd6ca-0bf7-4d41-a47c-2007ab287253\",\r\n        \"_links\": {\r\n          \"avatar\": {\r\n            \"href\": \"https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMTM3MQ\"\r\n          }\r\n        },\r\n        \"id\": \"13ddd6ca-0bf7-4d41-a47c-2007ab287253\",\r\n        \"uniqueName\": \"DEV\\\\Alexandr.Plaksin\",\r\n        \"imageUrl\": \"https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMTM3MQ\",\r\n        \"descriptor\": \"win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMTM3MQ\"\r\n      },\r\n      \"System.ChangedDate\": \"2025-03-28T13:30:12.533Z\",\r\n      \"System.ChangedBy\": {\r\n        \"displayName\": \"Alexandr E. Plaksin\",\r\n        \"url\": \"https://tfs.dev.vitacore.ru/tfs/_apis/Identities/13ddd6ca-0bf7-4d41-a47c-2007ab287253\",\r\n        \"_links\": {\r\n          \"avatar\": {\r\n            \"href\": \"https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMTM3MQ\"\r\n          }\r\n        },\r\n        \"id\": \"13ddd6ca-0bf7-4d41-a47c-2007ab287253\",\r\n        \"uniqueName\": \"DEV\\\\Alexandr.Plaksin\",\r\n        \"imageUrl\": \"https://tfs.dev.vitacore.ru/tfs/_apis/GraphProfile/MemberAvatars/win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMTM3MQ\",\r\n        \"descriptor\": \"win.Uy0xLTUtMjEtMjA5MzczODYzNy0yNjk5NzIxNTYyLTEzMDY0MzcyNDctMTM3MQ\"\r\n      },\r\n      \"System.CommentCount\": 0,\r\n      \"System.Title\": \"Создать новый IScopedHandler для проверки прав пользователя при закрытии обращения\",\r\n      \"Microsoft.VSTS.Common.StateChangeDate\": \"2025-03-28T13:30:12.533Z\",\r\n      \"Microsoft.VSTS.Common.Priority\": 2,\r\n      \"System.Description\": \"<div>Зарегать в ISZL-овском&nbsp;ScopedSchemaStarter </div>\",\r\n      \"System.Parent\": 5441\r\n    },\r\n    \"_links\": {\r\n      \"self\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11448\"\r\n      },\r\n      \"workItemUpdates\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11448/updates\"\r\n      },\r\n      \"workItemRevisions\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11448/revisions\"\r\n      },\r\n      \"workItemComments\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11448/comments\"\r\n      },\r\n      \"html\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_workitems/edit/11448\"\r\n      },\r\n      \"workItemType\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItemTypes/Task\"\r\n      },\r\n      \"fields\": {\r\n        \"href\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/fields\"\r\n      }\r\n    },\r\n    \"url\": \"https://tfs.dev.vitacore.ru/tfs/543bf3ae-27f7-4f5f-a28c-c7e5ffc85890/_apis/wit/workItems/11448\"\r\n  },\r\n  \"resourceVersion\": \"5.1-preview.3\",\r\n  \"resourceContainers\": {\r\n    \"collection\": {\r\n      \"id\": \"14ed7439-51c3-4522-8939-cc6e31156c6a\",\r\n      \"baseUrl\": \"https://tfs.dev.vitacore.ru/tfs/\"\r\n    },\r\n    \"server\": {\r\n      \"id\": \"ba7421f6-fa42-4018-85b5-f7c14112d595\",\r\n      \"baseUrl\": \"https://tfs.dev.vitacore.ru/\"\r\n    },\r\n    \"project\": {\r\n      \"id\": \"543bf3ae-27f7-4f5f-a28c-c7e5ffc85890\",\r\n      \"baseUrl\": \"https://tfs.dev.vitacore.ru/tfs/\"\r\n    }\r\n  },\r\n  \"createdDate\": \"2025-03-28T13:30:20.2154196Z\"\r\n}\r\n";
+
+                    WorkItemCreatedCustomPayload? created = JsonConvert.DeserializeObject<WorkItemCreatedCustomPayload>(json);
 
                     await WorkItemCreatedNotify(created);
                 }
@@ -93,6 +95,13 @@ public class TelegramNotificationService : INotificationService
     private async Task PullRequestCreatedNotify(GitPullRequestCreatedPayload resource)
     {
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+        Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
+        if (match.Success)
+        {
+            string remove = match.Groups[1].Value;
+            users.RemoveWhere(x => x.Contains(remove));
+        }
+
         List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
         StringBuilder sb = new StringBuilder();
@@ -130,6 +139,12 @@ public class TelegramNotificationService : INotificationService
         }
 
         HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+        Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
+        if (match.Success)
+        {
+            string remove = match.Groups[1].Value;
+            users.RemoveWhere(x => x.Contains(remove));
+        }
 
         List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
 
@@ -199,6 +214,11 @@ public class TelegramNotificationService : INotificationService
     /// < returns ></ returns >
     private async Task WorkItemCreatedNotify(WorkItemCreatedCustomPayload resource)
     {
+        if (resource.Resource.Fields.SystemAssignedTo == null)
+        {
+            return;
+        }
+
         Match matchItemId = Regex.Match(resource.Message.Text, @"#(\d+)");
 
         if (matchItemId.Success)
