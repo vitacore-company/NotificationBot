@@ -265,6 +265,10 @@ public class TelegramNotificationService : INotificationService
     /// < returns ></ returns >
     private async Task WorkItemUpdatedNotify(WorkItemUpdatedCustomPayload resource)
     {
+        if (resource.Resource.Revision.Fields.SystemAssignedTo == null)
+        {
+            return;
+        }
         if (resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
         {
             return;
