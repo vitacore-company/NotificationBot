@@ -101,29 +101,25 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                         replyMarkup: inlineKeyboard);
                                 }
                                 break;
-
-                            case "ISZL(agile)":
-                            case "EDO.TFOMS":
-                            case "IES(agile)":
-                                {
-                                    List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, update.CallbackQuery.Data);
-
-                                    var inlineKeyboard = new InlineKeyboardMarkup();
-                                    foreach (string _type in types)
-                                    {
-                                        inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
-                                    }
-
-                                    await _botClient.SendMessage(
-                                        message.Chat.Id,
-                                        $"Настройка оповещений для проекта {Markdown.Escape(update.CallbackQuery.Data)}",
-                                        parseMode: ParseMode.MarkdownV2,
-                                        replyMarkup: inlineKeyboard);
-                                }
-                                break;
                         }
 
-                        if (message.Text.Contains("Настройка оповещений"))
+                        if (await _notificationTypesService.GetProjectByName(update.CallbackQuery.Data))
+                        {
+                            List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, update.CallbackQuery.Data);
+
+                            var inlineKeyboard = new InlineKeyboardMarkup();
+                            foreach (string _type in types)
+                            {
+                                inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
+                            }
+
+                            await _botClient.SendMessage(
+                                message.Chat.Id,
+                                $"Настройка оповещений для проекта {Markdown.Escape(update.CallbackQuery.Data)}",
+                                parseMode: ParseMode.MarkdownV2,
+                                replyMarkup: inlineKeyboard);
+                        }
+                        else if (message.Text.Contains("Настройка оповещений"))
                         {
                             Match projectMatch = Regex.Match(message.Text, @"([\w.-]+(\([\w.-]+\))?)$");
 
@@ -248,7 +244,6 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                 replyMarkup: inlineKeyboard);
                         }
                     }
-
                 }
                 break;
 

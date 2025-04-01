@@ -272,7 +272,7 @@ public class TelegramNotificationService : INotificationService
         {
             return;
         }
-        if (resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
+        if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
         {
             return;
         }
