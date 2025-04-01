@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace NotificationsBot.Models;
+namespace NotificationsBot.Models.Database;
 /// <summary>
 /// Пользователь
 /// </summary>

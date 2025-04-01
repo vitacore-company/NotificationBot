@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.FileSystemGlobbing.Internal;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models;
-using System;
+using NotificationsBot.Models.Database;
 using System.Collections.Concurrent;
 
 namespace NotificationsBot.Services

@@ -1,5 +1,7 @@
 ﻿using NotificationsBot.Interfaces;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
+using Telegram.Bot.Extensions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
@@ -17,13 +19,17 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     private readonly ITelegramBotClient _botClient;
     private readonly IUsersDataService _usersDataService;
     private readonly IExistUserChecker _userChecker;
+    private readonly INotificationTypesService _notificationTypesService;
 
-    public TelegramCommandHandler(ITelegramBotClient botClient, IUsersDataService usersDataService, IExistUserChecker userChecker)
+    public TelegramCommandHandler(ITelegramBotClient botClient,
+        IUsersDataService usersDataService,
+        IExistUserChecker userChecker,
+        INotificationTypesService notificationTypesService)
     {
         _botClient = botClient;
         _usersDataService = usersDataService;
         _userChecker = userChecker;
-
+        _notificationTypesService = notificationTypesService;
     }
 
     /// <summary>
@@ -78,6 +84,68 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                     await _botClient.SendMessage(message.Chat, "Введите логин (пример DEV\\Name.Surname)");
                                 }
                                 break;
+
+                            case "notificationSettings":
+                                {
+                                    List<string> projects = _notificationTypesService.GetProjects();
+
+                                    var inlineKeyboard = new InlineKeyboardMarkup();
+                                    foreach (string project in projects)
+                                    {
+                                        inlineKeyboard.AddButton(new InlineKeyboardButton(project, project));
+                                    }
+
+                                    await _botClient.EditMessageReplyMarkup(
+                                        message.Chat.Id,
+                                        message.Id,
+                                        replyMarkup: inlineKeyboard);
+                                }
+                                break;
+
+                            case "ISZL(agile)":
+                            case "EDO.TFOMS":
+                            case "IES(agile)":
+                                {
+                                    List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, update.CallbackQuery.Data);
+
+                                    var inlineKeyboard = new InlineKeyboardMarkup();
+                                    foreach (string _type in types)
+                                    {
+                                        inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
+                                    }
+
+                                    await _botClient.SendMessage(
+                                        message.Chat.Id,
+                                        $"Настройка оповещений для проекта {Markdown.Escape(update.CallbackQuery.Data)}",
+                                        parseMode: ParseMode.MarkdownV2,
+                                        replyMarkup: inlineKeyboard);
+                                }
+                                break;
+                        }
+
+                        if (message.Text.Contains("Настройка оповещений"))
+                        {
+                            Match projectMatch = Regex.Match(message.Text, @"([\w.-]+(\([\w.-]+\))?)$");
+
+                            if (projectMatch.Success)
+                            {
+                                string project = projectMatch.Groups[1].Value;
+                                long chatId = message.Chat.Id;
+                                string command = update.CallbackQuery.Data;
+
+                                List<string> newNotifys = await _notificationTypesService.SetOrDeleteChatProjectNotification(project, chatId, command);
+
+                                var inlineKeyboard = new InlineKeyboardMarkup();
+                                foreach (string _type in newNotifys)
+                                {
+                                    inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
+                                }
+
+                                await _botClient.EditMessageReplyMarkup(
+                                    message.Chat.Id,
+                                    message.Id,
+                                    inlineKeyboard);
+                            }
                         }
 
                         await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id);
@@ -147,10 +215,10 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                             var inlineKeyboard = new InlineKeyboardMarkup(
                             new List<InlineKeyboardButton[]>()
                             {
-                            new InlineKeyboardButton[] // тут создаем массив кнопок
-                            {
-                                 InlineKeyboardButton.WithCallbackData("Регистрация", "registerButton"),
-                            }
+                                new InlineKeyboardButton[] // тут создаем массив кнопок
+                                {
+                                     InlineKeyboardButton.WithCallbackData("Регистрация", "registerButton"),
+                                }
                             });
 
                             await _botClient.SendMessage(
@@ -166,10 +234,11 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                             var inlineKeyboard = new InlineKeyboardMarkup(
                             new List<InlineKeyboardButton[]>()
                             {
-                            new InlineKeyboardButton[] // тут создаем массив кнопок
-                            {
-                                 InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"),
-                            }
+                                new InlineKeyboardButton[] // тут создаем массив кнопок
+                                {
+                                     InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"),
+                                     InlineKeyboardButton.WithCallbackData("Настройка оповещений", "notificationSettings"),
+                                }
                             });
 
                             await _botClient.SendMessage(

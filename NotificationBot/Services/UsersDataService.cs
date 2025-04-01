@@ -1,5 +1,5 @@
 ﻿using NotificationsBot.Interfaces;
-using NotificationsBot.Models;
+using NotificationsBot.Models.Database;
 using System.Diagnostics.CodeAnalysis;
 
 namespace NotificationsBot.Services;

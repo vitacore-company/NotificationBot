@@ -33,6 +33,7 @@ public static class ServiceExtension
         services.AddScoped<ReceiverService>();
         services.AddScoped<IExistUserChecker, ExistUserChecker>();
         services.AddScoped<IUserHolder, UserHolderService>();
+        services.AddScoped<INotificationTypesService, NotificationTypesService>();
         services.AddHostedService<BackgroundUserService>();
         services.AddHostedService<PollingService>();
 
