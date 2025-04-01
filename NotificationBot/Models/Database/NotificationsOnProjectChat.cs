@@ -1,5 +1,8 @@
-﻿namespace NotificationsBot.Models.Database
+﻿using Microsoft.EntityFrameworkCore;
+
+namespace NotificationsBot.Models.Database
 {
+    [PrimaryKey(nameof(UserId), nameof(ProjectId), nameof(NotificationTypesId))]
     public class NotificationsOnProjectChat
     {
         public long UserId { get; set; }

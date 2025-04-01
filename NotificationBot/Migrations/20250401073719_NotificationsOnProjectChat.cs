@@ -20,7 +20,7 @@ namespace NotificationsBot.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_NotificationsOnProjectChat", x => new { x.UserId, x.NotificationTypesId, x.ProjectId });
+                    table.PrimaryKey("PK_NotificationsOnProjectChat", x => new { x.UserId, x.ProjectId, x.NotificationTypesId });
                     table.ForeignKey(
                         name: "FK_NotificationsOnProjectChat_NotificationTypes_NotificationTy~",
                         column: x => x.NotificationTypesId,

@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using NotificationsBot.Configuration;
 using NotificationsBot.Models.Database;
 
 public class AppContext : DbContext
@@ -17,6 +16,5 @@ public class AppContext : DbContext
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        modelBuilder.ApplyConfiguration(new NotificationsOnProjectChatConfiguration());
     }
 }

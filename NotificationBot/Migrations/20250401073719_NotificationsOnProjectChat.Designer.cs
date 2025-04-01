@@ -10,7 +10,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace NotificationsBot.Migrations
 {
     [DbContext(typeof(AppContext))]
-    [Migration("20250331093134_NotificationsOnProjectChat")]
+    [Migration("20250401073719_NotificationsOnProjectChat")]
     partial class NotificationsOnProjectChat
     {
         /// <inheritdoc />
@@ -49,13 +49,13 @@ namespace NotificationsBot.Migrations
                     b.Property<long>("UserId")
                         .HasColumnType("bigint");
 
-                    b.Property<int>("NotificationTypesId")
-                        .HasColumnType("integer");
-
                     b.Property<int>("ProjectId")
                         .HasColumnType("integer");
 
-                    b.HasKey("UserId", "NotificationTypesId", "ProjectId");
+                    b.Property<int>("NotificationTypesId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("UserId", "ProjectId", "NotificationTypesId");
 
                     b.HasIndex("NotificationTypesId");
 
