@@ -64,6 +64,13 @@ namespace NotificationsBot.Services
             return [];
         }
 
+        public async Task<bool> GetProjectByName(string projectName)
+        {
+            int project = _context.Projects.Where(x => x.Name == projectName).Count();
+
+            return project > 0;
+        }
+
         private async Task<List<string>> getNotifys(Projects project, long chatId)
         {
             List<string> userNotifys = new List<string>();
@@ -88,5 +95,6 @@ namespace NotificationsBot.Services
         {
             return _context.NotificationTypes.Select(x => x.EventDescription).ToList();
         }
+
     }
 }
