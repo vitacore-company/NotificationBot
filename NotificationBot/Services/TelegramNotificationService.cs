@@ -100,7 +100,7 @@ public class TelegramNotificationService : INotificationService
             users.RemoveWhere(x => x.Contains(remove));
         }
 
-        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
+        List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolderService.GetChatIdsByLogin(users.ToList()));
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
@@ -144,7 +144,7 @@ public class TelegramNotificationService : INotificationService
             users.RemoveWhere(x => x.Contains(remove));
         }
 
-        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
+        List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolderService.GetChatIdsByLogin(users.ToList()));
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
@@ -179,7 +179,10 @@ public class TelegramNotificationService : INotificationService
         string author = resource.Resource.comment.author.uniqueName;
 
         users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
-        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
+        List<long> chatIds = await FilteredByNotifyUsers(
+            resource.EventType,
+            resource.Resource.pullRequest.Repository.Project.Name,
+            await _userHolderService.GetChatIdsByLogin(users.ToList()));
 
         StringBuilder sb = new StringBuilder();
         sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text));
@@ -226,7 +229,7 @@ public class TelegramNotificationService : INotificationService
             HashSet<string> users = new HashSet<string>();
             users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
 
-            List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
+            List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolderService.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
@@ -303,7 +306,7 @@ public class TelegramNotificationService : INotificationService
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName));
                 sb.AppendLine();
                 sb.Append("~Old Assigned to: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue.DisplayName) + "~");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue?.DisplayName) + "~");
                 sb.AppendLine();
 
                 users.Add(resource.Resource.Fields.SystemAssignedTo.NewValue.UniqueName);
@@ -328,7 +331,7 @@ public class TelegramNotificationService : INotificationService
 
             string messageText = sb.ToString();
 
-            List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
+            List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolderService.GetChatIdsByLogin(users.ToList()));
 
             if (chatIds.Count > 0)
             {
@@ -348,12 +351,32 @@ public class TelegramNotificationService : INotificationService
         HashSet<string> users = new HashSet<string>();
 
         users.Add(resource.Resource.RequestedBy.UniqueName);
-        List<long> chatIds = await _userHolderService.GetChatIdsByLogin(users.ToList());
+        List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Project.Name, await _userHolderService.GetChatIdsByLogin(users.ToList())); 
 
         if (chatIds.Count > 0)
         {
             _telegramBotClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
         }
+    }
+
+    private async Task<List<long>> FilteredByNotifyUsers(string eventType, string project, List<long> users)
+    {
+        if (users.Count > 0)
+        {
+            int? notificationTypeId = await _appContext.NotificationTypes.Where(x => x.EventType == eventType).Select(x => x.Id).SingleOrDefaultAsync();
+            int? projectId = await _appContext.Projects.Where(x => x.Name == project).Select(x => x.Id).SingleOrDefaultAsync();
+
+            if (notificationTypeId.HasValue && projectId.HasValue)
+            {
+                List<long> _users = await _appContext.NotificationsOnProjectChat
+                    .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
+                    .Where(user => users.Contains(user.Users.ChatId)).Select(x => x.Users.ChatId).ToListAsync();
+
+                return _users;
+            }
+        }
+
+        return [];
     }
 
     /// <summary>
