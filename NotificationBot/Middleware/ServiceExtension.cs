@@ -36,6 +36,7 @@ public static class ServiceExtension
         services.AddScoped<INotificationTypesService, NotificationTypesService>();
         services.AddHostedService<BackgroundUserService>();
         services.AddHostedService<PollingService>();
+        services.AddTransient<ExceptionMiddleware>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
@@ -112,6 +113,8 @@ public static class ServiceExtension
                 throw;
             }
         }
+
+        webApplication.UseMiddleware<ExceptionMiddleware>();
 
         return webApplication;
     }
