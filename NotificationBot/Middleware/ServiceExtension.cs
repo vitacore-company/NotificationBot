@@ -5,6 +5,7 @@ using NotificationsBot.Interfaces;
 using NotificationsBot.Services;
 using NotificationsBot.Services.Background;
 using NotificationsBot.Services.Background.Polling;
+using System.Reflection;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 
@@ -36,6 +37,9 @@ public static class ServiceExtension
         services.AddScoped<INotificationTypesService, NotificationTypesService>();
         services.AddHostedService<BackgroundUserService>();
         services.AddHostedService<PollingService>();
+        services.RegisterHandler();
+        services.AddMessageHandlers(Assembly.GetExecutingAssembly());
+        services.AddScoped<IHandlerFactory, HandlerFactory>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Concurrent;
 
-namespace NotificationsBot.Models
+namespace NotificationsBot.Models.Locals
 {
     public static class LocalUsers
     {

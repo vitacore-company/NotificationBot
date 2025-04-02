@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotificationsBot.Interfaces;
-using NotificationsBot.Models;
 using NotificationsBot.Models.Database;
+using NotificationsBot.Models.Locals;
 using System.Collections.Concurrent;
 
 namespace NotificationsBot.Services
