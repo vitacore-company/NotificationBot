@@ -75,18 +75,12 @@ public class UsersDataService : IUsersDataService
     /// <param name="userId">Идентификатор пользователя.</param>
     /// <returns></returns>
     /// <exception cref="System.ArgumentException">
-    /// Параметр {nameof(login)} равен null или пуст - login
-    /// or
     /// Параметр {nameof(chatId)} равный -1 не может быть сохранен - chatId
     /// or
     /// Параметр {nameof(userId)} равный -1 не может быть сохранен - userId
     /// </exception>
     public Task SaveNewUser(string? login, long chatId, long userId)
     {
-        if(string.IsNullOrEmpty(login) )
-        {
-            throw new ArgumentException($"Параметр {nameof(login)} равен null или пуст", nameof(login));
-        }
         if (chatId == -1 )
         {
             throw new ArgumentException($"Параметр {nameof(chatId)} равный -1 не может быть сохранен", nameof(chatId));
