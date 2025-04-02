@@ -38,7 +38,7 @@ namespace NotificationsBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes");
+                    b.ToTable("NotificationTypes", (string)null);
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.NotificationsOnProjectChat", b =>
@@ -59,7 +59,7 @@ namespace NotificationsBot.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("NotificationsOnProjectChat");
+                    b.ToTable("NotificationsOnProjectChat", (string)null);
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.Projects", b =>
@@ -76,7 +76,7 @@ namespace NotificationsBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.User", b =>
@@ -98,7 +98,7 @@ namespace NotificationsBot.Migrations
 
                     b.HasKey("ChatId");
 
-                    b.ToTable("Users");
+                    b.ToTable("Users", (string)null);
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.NotificationsOnProjectChat", b =>

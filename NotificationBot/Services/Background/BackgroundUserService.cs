@@ -14,11 +14,11 @@ namespace NotificationsBot.Services.Background
         {
             while (!stoppingToken.IsCancellationRequested)
             {
-                using (var scope = serviceProvider.CreateScope())
+                using (IServiceScope scope = serviceProvider.CreateScope())
                 {
                     IUserHolder userHolder = scope.ServiceProvider.GetRequiredService<IUserHolder>();
 
-                    userHolder.ClearAsync();
+                    userHolder.Clear();
                 }
 
                 // каждые 3 часа очищается пул юзеров
