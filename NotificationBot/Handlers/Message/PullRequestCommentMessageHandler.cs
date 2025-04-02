@@ -21,6 +21,8 @@ namespace NotificationsBot.Handlers
         public async Task Handle(PullRequestCommentedPayload resource)
         {
             HashSet<string> users = resource.Resource.pullRequest.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+            users.Add(resource.Resource.pullRequest.CreatedBy.UniqueName); // - добавляем автора пра отдельно
+
             string author = resource.Resource.comment.author.uniqueName;
 
             users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
