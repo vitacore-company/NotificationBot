@@ -70,6 +70,9 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                     {
                         Message? message = update.CallbackQuery.Message;
 
+                        if(message == null)
+                            return;
+
                         switch (update.CallbackQuery.Data)
                         {
                             case "loginChangeButton":
@@ -89,7 +92,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                 {
                                     List<string> projects = _notificationTypesService.GetProjects();
 
-                                    var inlineKeyboard = new InlineKeyboardMarkup();
+                                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
                                     foreach (string project in projects)
                                     {
                                         inlineKeyboard.AddButton(new InlineKeyboardButton(project, project));
@@ -103,11 +106,11 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                 break;
                         }
 
-                        if (await _notificationTypesService.GetProjectByName(update.CallbackQuery.Data))
+                        if (await _notificationTypesService.GetProjectByName(update.CallbackQuery.Data ?? ""))
                         {
-                            List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, update.CallbackQuery.Data);
+                            List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, update.CallbackQuery.Data ?? "");
 
-                            var inlineKeyboard = new InlineKeyboardMarkup();
+                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
                             foreach (string _type in types)
                             {
                                 inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
@@ -119,7 +122,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                 parseMode: ParseMode.MarkdownV2,
                                 replyMarkup: inlineKeyboard);
                         }
-                        else if (message.Text.Contains("Настройка оповещений"))
+                        else if (message.Text?.Contains("Настройка оповещений") ?? false)
                         {
                             Match projectMatch = Regex.Match(message.Text, @"([\w.-]+(\([\w.-]+\))?)$");
 
@@ -127,11 +130,11 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                             {
                                 string project = projectMatch.Groups[1].Value;
                                 long chatId = message.Chat.Id;
-                                string command = update.CallbackQuery.Data;
+                                string command = update.CallbackQuery.Data ?? "";
 
                                 List<string> newNotifys = await _notificationTypesService.SetOrDeleteChatProjectNotification(project, chatId, command);
 
-                                var inlineKeyboard = new InlineKeyboardMarkup();
+                                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
                                 foreach (string _type in newNotifys)
                                 {
                                     inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
@@ -201,14 +204,14 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         {
             case "/start":
                 {
-                    if (await _userChecker.CheckExistUser(msg.From.Id))
+                    if (await _userChecker.CheckExistUser(msg.From?.Id ?? -1))
                     {
                         if (!await _usersDataService.IsContainUser(msg.Chat.Id))
                         {
-                            await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From.Id);
+                            await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From?.Id ?? -1);
                             await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
 
-                            var inlineKeyboard = new InlineKeyboardMarkup(
+                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
                             new List<InlineKeyboardButton[]>()
                             {
                                 new InlineKeyboardButton[] // тут создаем массив кнопок
@@ -227,7 +230,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                         {
                             await _botClient.SendMessage(msg.Chat, "Вы уже авторизированы");
 
-                            var inlineKeyboard = new InlineKeyboardMarkup(
+                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
                             new List<InlineKeyboardButton[]>()
                             {
                                 new InlineKeyboardButton[] // тут создаем массив кнопок
@@ -277,7 +280,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 
             case "/changeLogin":
                 {
-                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id, msg.From.Id);
+                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id, msg.From?.Id ?? -1);
                     await _botClient.SendMessage(msg.Chat, "Логин изменен");
                     await _usersDataService.CancelStatus(msg.Chat.Id);
                 }

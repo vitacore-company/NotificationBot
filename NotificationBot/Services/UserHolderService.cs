@@ -1,7 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotificationsBot.Interfaces;
-using NotificationsBot.Models;
 using NotificationsBot.Models.Database;
+using NotificationsBot.Models.Locals;
 using System.Collections.Concurrent;
 
 namespace NotificationsBot.Services
@@ -17,7 +17,7 @@ namespace NotificationsBot.Services
             _userChecker = userChecker;
         }
 
-        public async Task ClearAsync()
+        public void Clear()
         {
             Interlocked.CompareExchange(ref LocalUsers.Users, new ConcurrentDictionary<string, UserInfo>(), LocalUsers.Users);
         }
@@ -30,7 +30,7 @@ namespace NotificationsBot.Services
             {
                 if (!LocalUsers.Users.TryGetValue(userLogin, out UserInfo userInfo))
                 {
-                    User? user = _context.Users.Where(x => EF.Functions.ILike(x.Login, "%" + userLogin + "%")).FirstOrDefault();
+                    User? user = _context.Users.Where(x => x.Login != null && EF.Functions.ILike(x.Login, "%" + userLogin + "%")).FirstOrDefault();
 
                     if (user == null)
                     {

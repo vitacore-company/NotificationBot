@@ -4,6 +4,6 @@
     {
         public Task<List<long>> GetChatIdsByLogin(List<string> login);
 
-        public Task ClearAsync();
+        public void Clear();
     }
 }
