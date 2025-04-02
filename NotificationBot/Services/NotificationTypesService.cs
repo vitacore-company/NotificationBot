@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.Database;
+using System.Diagnostics.CodeAnalysis;
 
 namespace NotificationsBot.Services
 {
@@ -14,11 +15,14 @@ namespace NotificationsBot.Services
 
         public async Task<List<string>> GetNotifications(long chatId, string project)
         {
-            Projects? _project = await _context.Projects.Where(x => x.Name == project).FirstOrDefaultAsync();
-
-            if (_project != null)
+            if (chatId != -1 && !string.IsNullOrEmpty(project))
             {
-                return await getNotifys(_project, chatId);
+                Projects? _project = await _context.Projects.Where(x => x.Name == project).FirstOrDefaultAsync();
+
+                if (_project != null)
+                {
+                    return await getNotifys(_project, chatId);
+                }
             }
 
             return [];
@@ -36,12 +40,16 @@ namespace NotificationsBot.Services
         /// <param name="chatId"></param>
         /// <param name="notificationType"></param>
         /// <returns></returns>
-        public async Task<List<string>> SetOrDeleteChatProjectNotification(string project, long chatId, string notificationType)
+        public async Task<List<string>> SetOrDeleteChatProjectNotification([AllowNull]string project, long chatId, [AllowNull]string notificationType)
         {
+            if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(notificationType))
+            {
+                return [];
+            }
             Projects? _project = await _context.Projects.Where(x => x.Name == project).FirstOrDefaultAsync();
             NotificationTypes? type = await _context.NotificationTypes.Where(x => x.EventDescription == notificationType).FirstOrDefaultAsync();
 
-            if (project != null && type != null)
+            if (type != null && _project != null)
             {
                 NotificationsOnProjectChat? chatNotification = await _context.NotificationsOnProjectChat
                     .Where(x => x.UserId == chatId && x.Project == _project && x.NotificationTypes == type).SingleOrDefaultAsync();
@@ -64,11 +72,15 @@ namespace NotificationsBot.Services
             return [];
         }
 
-        public async Task<bool> GetProjectByName(string projectName)
+        public Task<bool> GetProjectByName([MaybeNullWhen(false)]string projectName)
         {
+            if (string.IsNullOrEmpty(projectName))
+            {
+                return Task.FromResult(false);
+            }
             int project = _context.Projects.Where(x => x.Name == projectName).Count();
 
-            return project > 0;
+            return Task.FromResult(project > 0);
         }
 
         private async Task<List<string>> getNotifys(Projects project, long chatId)

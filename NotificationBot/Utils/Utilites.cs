@@ -9,13 +9,16 @@ namespace NotificationsBot.Utils
         public static async Task<T> ToObject<T>(this HttpResponseMessage response)
         {
             string responseAsString = await response.Content.ReadAsStringAsync();
-            T responseObject = JsonSerializer.Deserialize<T>(responseAsString, new JsonSerializerOptions
+            T? responseObject = JsonSerializer.Deserialize<T>(responseAsString, new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 ReferenceHandler = ReferenceHandler.Preserve
             });
-
-            return responseObject;
+            if (responseObject != null)
+            {
+                return responseObject;
+            }
+            throw new ArgumentException("Данные не удалось преобразовать в объект");
         }
 
         public static string PullRequestLinkConfigure(string project, string repoName, int pullrequestId, string linkLabel)

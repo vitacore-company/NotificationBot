@@ -10,6 +10,7 @@ public interface IUsersDataService
     /// </summary>
     /// <param name="login">Логин.</param>
     /// <param name="chatId">Идентификатор чата.</param>
+    /// <param name="userId">Идентификатор пользователя.</param>
     /// <returns></returns>
     public Task SaveNewUser(string? login, long chatId, long userId);
     /// <summary>
