@@ -20,7 +20,7 @@ namespace NotificationsBot.Handlers
         {
             HashSet<string> users = new HashSet<string>();
 
-            users.Add(resource.Resource.RequestedBy.UniqueName);
+            users.Add(resource.Resource.RequestedFor.UniqueName);
             List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             if (chatIds.Count > 0)
