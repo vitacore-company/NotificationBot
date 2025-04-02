@@ -9,6 +9,10 @@ namespace NotificationsBot.Models.AzureModels.BuildStateChanged
         [AllowNull]
         [JsonProperty("requestedBy")]
         public ResourceUser RequestedBy { get; set; }
+        
+        [AllowNull]
+        [JsonProperty("requestedFor")]
+        public ResourceUser RequestedFor { get; set; }
 
         [AllowNull]
         [JsonProperty("project")]
