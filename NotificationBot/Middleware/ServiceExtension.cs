@@ -40,6 +40,7 @@ public static class ServiceExtension
         services.RegisterHandler();
         services.AddMessageHandlers(Assembly.GetExecutingAssembly());
         services.AddScoped<IHandlerFactory, HandlerFactory>();
+        services.AddTransient<ExceptionMiddleware>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
@@ -116,6 +117,8 @@ public static class ServiceExtension
                 throw;
             }
         }
+
+        webApplication.UseMiddleware<ExceptionMiddleware>();
 
         return webApplication;
     }
