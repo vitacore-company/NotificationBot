@@ -19,7 +19,7 @@ namespace NotificationsBot.Services
                 throw new ArgumentNullException(nameof(handlerType));
             }
 
-            using (var scope = _serviceProvider.CreateScope())
+            using (IServiceScope scope = _serviceProvider.CreateScope())
             {
                 object? handler = scope.ServiceProvider.GetService(handlerType);
                 if (handler == null)
@@ -45,11 +45,26 @@ namespace NotificationsBot.Services
                     {
                         // Вызываем метод Handle с правильным типом
                         System.Reflection.MethodInfo? handleMethod = handler.GetType().GetMethod(nameof(IMessageHandler<object>.Handle));
-
-                        await (Task)handleMethod.Invoke(handler, new[] { deserializedObject });
+                        if (handleMethod != null)
+                        {
+                            object? taskObject = handleMethod.Invoke(handler, new[] { deserializedObject });
+                            if (taskObject != null && taskObject is Task task)
+                            {
+                                await task;
+                            }
+                            else
+                            {
+                                throw new HandlerFactoryException();
+                            }
+                        }
                     }
                 }
             }
         }
+    }
+
+    public class HandlerFactoryException : Exception
+    {
+
     }
 }

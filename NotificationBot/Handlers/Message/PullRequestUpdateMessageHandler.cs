@@ -51,7 +51,7 @@ namespace NotificationsBot.Handlers
 
             foreach (long chatId in chatIds)
             {
-                _botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+                _ = _botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
     }

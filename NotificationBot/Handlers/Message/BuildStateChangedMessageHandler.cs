@@ -25,7 +25,7 @@ namespace NotificationsBot.Handlers
 
             if (chatIds.Count > 0)
             {
-                _botClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+                _ = _botClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
     }

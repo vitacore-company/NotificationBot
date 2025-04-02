@@ -58,7 +58,7 @@ namespace NotificationsBot.Handlers
                     sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.NewValue.DisplayName));
                     sb.AppendLine();
                     sb.Append("~Old Assigned to: ");
-                    sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue?.DisplayName) + "~");
+                    sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.OldValue?.DisplayName ?? "") + "~");
                     sb.AppendLine();
 
                     users.Add(resource.Resource.Fields.SystemAssignedTo.NewValue.UniqueName);
@@ -86,7 +86,7 @@ namespace NotificationsBot.Handlers
 
                 if (chatIds.Count > 0)
                 {
-                    _botClient.SendMessage(chatIds.First(), messageText, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+                    _ = _botClient.SendMessage(chatIds.First(), messageText, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
                 }
             }
         }
