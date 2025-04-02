@@ -20,16 +20,20 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     private readonly IUsersDataService _usersDataService;
     private readonly IExistUserChecker _userChecker;
     private readonly INotificationTypesService _notificationTypesService;
+    private readonly ILogger<TelegramCommandHandler> _logger;
 
     public TelegramCommandHandler(ITelegramBotClient botClient,
         IUsersDataService usersDataService,
         IExistUserChecker userChecker,
-        INotificationTypesService notificationTypesService)
+        INotificationTypesService notificationTypesService,
+        ILogger<TelegramCommandHandler> logger)
     {
         _botClient = botClient;
         _usersDataService = usersDataService;
         _userChecker = userChecker;
         _notificationTypesService = notificationTypesService;
+        _logger = logger;
+
     }
 
     /// <summary>
@@ -70,7 +74,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                     {
                         Message? message = update.CallbackQuery.Message;
 
-                        if(message == null)
+                        if (message == null)
                             return;
 
                         switch (update.CallbackQuery.Data)
@@ -200,63 +204,70 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     /// <param name="msg">Cообщение</param>
     private async Task HandleOnMessage(Message msg)
     {
-        switch (msg.Text)
+        try
         {
-            case "/start":
-                {
-                    if (await _userChecker.CheckExistUser(msg.From?.Id ?? -1))
+            switch (msg.Text)
+            {
+                case "/start":
                     {
-                        if (!await _usersDataService.IsContainUser(msg.Chat.Id))
+                        if (await _userChecker.CheckExistUser(msg.From?.Id ?? -1))
                         {
-                            await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From?.Id ?? -1);
-                            await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
-
-                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                            new List<InlineKeyboardButton[]>()
+                            if (!await _usersDataService.IsContainUser(msg.Chat.Id))
                             {
+                                await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From?.Id ?? -1);
+                                await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
+
+                                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
+                                new List<InlineKeyboardButton[]>()
+                                {
                                 new InlineKeyboardButton[] // тут создаем массив кнопок
                                 {
                                      InlineKeyboardButton.WithCallbackData("Регистрация", "registerButton"),
                                 }
-                            });
+                                });
 
-                            await _botClient.SendMessage(
-                                msg.Chat.Id,
-                                "Выберите действие",
-                                parseMode: ParseMode.MarkdownV2,
-                                replyMarkup: inlineKeyboard);
-                        }
-                        else
-                        {
-                            await _botClient.SendMessage(msg.Chat, "Вы уже авторизированы");
-
-                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                            new List<InlineKeyboardButton[]>()
+                                await _botClient.SendMessage(
+                                    msg.Chat.Id,
+                                    "Выберите действие",
+                                    parseMode: ParseMode.MarkdownV2,
+                                    replyMarkup: inlineKeyboard);
+                            }
+                            else
                             {
+                                await _botClient.SendMessage(msg.Chat, "Вы уже авторизированы");
+
+                                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
+                                new List<InlineKeyboardButton[]>()
+                                {
                                 new InlineKeyboardButton[] // тут создаем массив кнопок
                                 {
                                      InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"),
                                      InlineKeyboardButton.WithCallbackData("Настройка оповещений", "notificationSettings"),
                                 }
-                            });
+                                });
 
-                            await _botClient.SendMessage(
-                                msg.Chat.Id,
-                                "Выберите действие",
-                                parseMode: ParseMode.MarkdownV2,
-                                replyMarkup: inlineKeyboard);
+                                await _botClient.SendMessage(
+                                    msg.Chat.Id,
+                                    "Выберите действие",
+                                    parseMode: ParseMode.MarkdownV2,
+                                    replyMarkup: inlineKeyboard);
+                            }
                         }
                     }
-                }
-                break;
+                    break;
 
-            case "/register":
-                await _botClient.SendMessage(msg.Chat, "Enter your login");
-                await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
-                break;
-            default:
-                await HandleOnMessageWithState(msg);
-                break;
+                case "/register":
+                    await _botClient.SendMessage(msg.Chat, "Enter your login");
+                    await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
+                    break;
+                default:
+                    await HandleOnMessageWithState(msg);
+                    break;
+            }
+        }
+        catch(Exception ex)
+        {
+            _logger.LogError(ex, ex.Message);
         }
     }
 
