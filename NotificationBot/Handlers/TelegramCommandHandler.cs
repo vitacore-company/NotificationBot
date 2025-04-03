@@ -1,4 +1,5 @@
 ﻿using NotificationsBot.Interfaces;
+using System.Text;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
@@ -33,7 +34,6 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         _userChecker = userChecker;
         _notificationTypesService = notificationTypesService;
         _logger = logger;
-
     }
 
     /// <summary>
@@ -236,21 +236,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                             {
                                 await _botClient.SendMessage(msg.Chat, "Вы уже авторизированы");
 
-                                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                                new List<InlineKeyboardButton[]>()
-                                {
-                                new InlineKeyboardButton[] // тут создаем массив кнопок
-                                {
-                                     InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"),
-                                     InlineKeyboardButton.WithCallbackData("Настройка оповещений", "notificationSettings"),
-                                }
-                                });
-
-                                await _botClient.SendMessage(
-                                    msg.Chat.Id,
-                                    "Выберите действие",
-                                    parseMode: ParseMode.MarkdownV2,
-                                    replyMarkup: inlineKeyboard);
+                                await sendBaseInformation(msg);
                             }
                         }
                     }
@@ -260,12 +246,41 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                     await _botClient.SendMessage(msg.Chat, "Enter your login");
                     await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
                     break;
+
+                case "/help":
+                    {
+                        StringBuilder sb = new StringBuilder();
+
+                        sb.AppendLine("*Обновление пуллреквеста*");
+                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет всех ревьюеров, которые находятся в пуллреквесте, о том, что произошли изменения (запушили код, аппрувнули и т.п.)"));
+                        sb.AppendLine();
+                        sb.AppendLine("*Комментирование пуллреквеста*");
+                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет всех ревьюеров, которые находятся в пуллреквесте, о том, что в пуллреквесте появились комментарии"));
+                        sb.AppendLine();
+                        sb.AppendLine("*Создание пуллреквеста*");
+                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет всех ревьюеров, которые находятся в пуллреквесте, о том, что был открыт пуллреквест"));
+                        sb.AppendLine();
+                        sb.AppendLine("*Создание рабочего элемента*");
+                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о создании рабочего элемента человека, на которого он сразу был назначен"));
+                        sb.AppendLine();
+                        sb.AppendLine("*Обновление рабочего элемента*");
+                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о изменении назначения или приоритета человека, на которого назначен рабочий элемент"));
+                        sb.AppendLine();
+                        sb.AppendLine("*Смена состояния сборки*");
+                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о изменении состояния сборки человека, который открыл пуллреквест"));
+                        sb.AppendLine();
+                        sb.AppendLine(char.ConvertFromUtf32(0x2757) + Markdown.Escape("Оповещения не приходят тому, кто триггернул") + char.ConvertFromUtf32(0x2757));
+
+                        await _botClient.SendMessage(msg.Chat, sb.ToString(), ParseMode.MarkdownV2);
+                    }
+                    break;
+
                 default:
                     await HandleOnMessageWithState(msg);
                     break;
             }
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
             _logger.LogError(ex, ex.Message);
         }
@@ -286,6 +301,8 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                     await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id);
                     await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
                     await _usersDataService.CancelStatus(msg.Chat.Id);
+
+                    await sendBaseInformation(msg);
                 }
                 break;
 
@@ -299,6 +316,25 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
             default:
                 break;
         }
+    }
+
+    private async Task sendBaseInformation(Message msg)
+    {
+        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
+            new List<InlineKeyboardButton[]>()
+            {
+                new InlineKeyboardButton[] // тут создаем массив кнопок
+                {
+                     InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"),
+                     InlineKeyboardButton.WithCallbackData("Настройка оповещений", "notificationSettings"),
+                }
+            });
+
+        await _botClient.SendMessage(
+            msg.Chat.Id,
+            "Выберите действие",
+            parseMode: ParseMode.MarkdownV2,
+            replyMarkup: inlineKeyboard);
     }
 
     /// <summary>
