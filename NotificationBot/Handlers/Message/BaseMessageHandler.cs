@@ -10,12 +10,15 @@ public abstract class BaseMessageHandler
     protected readonly AppContext _context;
     protected readonly ITelegramBotClient _botClient;
     protected readonly IUserHolder _userHolder;
+    protected readonly ILogger<BaseMessageHandler> _logger;
 
-    protected BaseMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder)
+    protected BaseMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger)
     {
         _context = context;
         _botClient = botClient;
         _userHolder = userHolder;
+        _logger = logger;
+
     }
 
     /// <summary>
@@ -37,6 +40,8 @@ public abstract class BaseMessageHandler
                 List<long> _users = await _context.NotificationsOnProjectChat
                     .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
                     .Where(user => users.Contains(user.Users.ChatId)).Select(x => x.Users.ChatId).ToListAsync();
+
+                _logger.LogInformation($"Получение пользователей для эвента {eventType}, проект {project}: {string.Join(',', _users)}");
 
                 return _users;
             }

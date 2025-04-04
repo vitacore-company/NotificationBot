@@ -14,7 +14,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class WorkItemCreatedMessageHandler : BaseMessageHandler, IMessageHandler<WorkItemCreatedCustomPayload>
     {
-        public WorkItemCreatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder) : base(context, botClient, userHolder)
+        public WorkItemCreatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
         {
         }
 
@@ -60,6 +60,7 @@ namespace NotificationsBot.Handlers
 
                 if (chatIds.Count > 0)
                 {
+                    _logger.LogInformation($"Рабочий элемент {matchItemId} создан, сообщение отправлено {chatIds.First()}");
                     _ = _botClient.SendMessage(chatIds.First(), message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
                 }
             }

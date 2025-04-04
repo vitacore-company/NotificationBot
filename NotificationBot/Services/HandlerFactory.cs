@@ -6,10 +6,13 @@ namespace NotificationsBot.Services
     public class HandlerFactory : IHandlerFactory
     {
         private readonly IServiceProvider _serviceProvider;
+        private readonly ILogger<HandlerFactory> _logger;
 
-        public HandlerFactory(IServiceProvider serviceProvider)
+        public HandlerFactory(IServiceProvider serviceProvider, ILogger<HandlerFactory> logger)
         {
             _serviceProvider = serviceProvider;
+            _logger = logger;
+
         }
 
         public async Task ProcessHandler(Type handlerType, string json)
@@ -47,6 +50,7 @@ namespace NotificationsBot.Services
                         System.Reflection.MethodInfo? handleMethod = handler.GetType().GetMethod(nameof(IMessageHandler<object>.Handle));
                         if (handleMethod != null)
                         {
+                            _logger.LogInformation($"Вызов обработчика {handleMethod.DeclaringType?.FullName}");
                             object? taskObject = handleMethod.Invoke(handler, new[] { deserializedObject });
                             if (taskObject != null && taskObject is Task task)
                             {
