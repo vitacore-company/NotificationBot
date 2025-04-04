@@ -1,5 +1,4 @@
 ﻿using NotificationsBot.Interfaces;
-using NotificationsBot.Utils;
 
 namespace NotificationsBot.Services
 {
@@ -12,22 +11,15 @@ namespace NotificationsBot.Services
         /// <returns></returns>
         public async Task<bool> CheckExistUser(long userId)
         {
-            if (userId == -1) 
+            if (userId == -1)
             {
                 return false;
             }
             using (HttpClient client = new HttpClient())
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://192.168.20.127:9898/user/{userId}");
-                HttpResponseMessage response = await client.SendAsync(request);
-
-                if (response.IsSuccessStatusCode)
-                {
-                    return response.ToObject<bool>().Result;
-                }
+                CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", client);
+                return  await openapiClient.GetAsync(userId);
             }
-
-            return false;
         }
     }
 }
