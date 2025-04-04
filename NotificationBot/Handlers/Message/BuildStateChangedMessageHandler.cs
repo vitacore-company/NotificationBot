@@ -12,7 +12,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class BuildStateChangedMessageHandler : BaseMessageHandler, IMessageHandler<BuildStateChangedCustomPayload>
     {
-        public BuildStateChangedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder) : base(context, botClient, userHolder)
+        public BuildStateChangedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
         {
         }
 
@@ -25,6 +25,7 @@ namespace NotificationsBot.Handlers
 
             if (chatIds.Count > 0)
             {
+                _logger.LogInformation($"Состояние сборки изменено, сообщение отправлено {string.Join(',', chatIds)}");
                 _ = _botClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }

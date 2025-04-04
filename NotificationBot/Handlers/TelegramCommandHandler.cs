@@ -206,6 +206,8 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     {
         try
         {
+            _logger.LogInformation($"Вызвана команда {msg.Text} пользователем {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username}");
+
             switch (msg.Text)
             {
                 case "/start":
@@ -302,12 +304,15 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                     await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
                     await _usersDataService.CancelStatus(msg.Chat.Id);
 
+                    _logger.LogInformation($"Пользователь {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username} зарегестрирован");
+
                     await sendBaseInformation(msg);
                 }
                 break;
 
             case "/changeLogin":
                 {
+                    _logger.LogInformation($"Пользователь {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username} изменил логин");
                     await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id, msg.From?.Id ?? -1);
                     await _botClient.SendMessage(msg.Chat, "Логин изменен");
                     await _usersDataService.CancelStatus(msg.Chat.Id);

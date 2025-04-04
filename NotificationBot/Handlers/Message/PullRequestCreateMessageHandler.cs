@@ -15,7 +15,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class PullRequestCreateMessageHandler : BaseMessageHandler, IMessageHandler<GitPullRequestCreatedPayload>
     {
-        public PullRequestCreateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder) : base(context, botClient, userHolder)
+        public PullRequestCreateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
         {
         }
 
@@ -48,6 +48,7 @@ namespace NotificationsBot.Handlers
 
             foreach (long chatId in chatIds)
             {
+                _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} создан, сообщение отправлено {string.Join(',', chatIds)}");
                 _ = _botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
