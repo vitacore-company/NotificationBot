@@ -11,22 +11,14 @@ namespace NotificationsBot.Services
         /// <returns></returns>
         public async Task<bool> CheckExistUser(long userId)
         {
-            if (userId == -1) 
+            if (userId == -1)
             {
                 return false;
             }
             using (HttpClient client = new HttpClient())
             {
                 CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", client);
-                bool? isExist = await openapiClient.GetAsync(userId);
-                if (isExist.HasValue) 
-                {
-                    return isExist.Value;
-                }
-                else
-                {
-                    return false;
-                }
+                return  await openapiClient.GetAsync(userId);
             }
         }
     }
