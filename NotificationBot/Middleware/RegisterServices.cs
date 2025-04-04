@@ -7,7 +7,7 @@ namespace NotificationsBot.Middleware
     {
         public static void AddMessageHandlers(this IServiceCollection services, Assembly assembly)
         {
-            var messageHandlerType = typeof(IMessageHandler<>);
+            Type messageHandlerType = typeof(IMessageHandler<>);
 
             // Получаем все типы в сборке, которые реализуют IMessageHandler<T>
             var handlerTypes = assembly.GetTypes()

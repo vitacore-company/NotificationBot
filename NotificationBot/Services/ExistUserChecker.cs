@@ -1,5 +1,4 @@
 ﻿using NotificationsBot.Interfaces;
-using NotificationsBot.Utils;
 
 namespace NotificationsBot.Services
 {
@@ -18,16 +17,17 @@ namespace NotificationsBot.Services
             }
             using (HttpClient client = new HttpClient())
             {
-                HttpRequestMessage request = new HttpRequestMessage(HttpMethod.Get, $"http://192.168.20.127:9898/user/{userId}");
-                HttpResponseMessage response = await client.SendAsync(request);
-
-                if (response.IsSuccessStatusCode)
+                CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", client);
+                bool? isExist = await openapiClient.GetAsync(userId);
+                if (isExist.HasValue) 
                 {
-                    return response.ToObject<bool>().Result;
+                    return isExist.Value;
+                }
+                else
+                {
+                    return false;
                 }
             }
-
-            return false;
         }
     }
 }

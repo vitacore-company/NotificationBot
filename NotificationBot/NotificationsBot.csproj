@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <OpenApiReference Include="OpenAPIs\openapi.json">
+    <OpenApiReference Include="OpenAPIs\openapi.json" ClassName="CheckerUser">
       <SourceUri>http://192.168.20.127:9898/openapi.json</SourceUri>
     </OpenApiReference>
   </ItemGroup>
