@@ -46,9 +46,9 @@ namespace NotificationsBot.Handlers
 
             string message = sb.ToString();
 
+            _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} создан, сообщение отправлено {string.Join(',', chatIds)}");
             foreach (long chatId in chatIds)
             {
-                _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} создан, сообщение отправлено {string.Join(',', chatIds)}");
                 _ = _botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
