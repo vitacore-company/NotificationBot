@@ -1,13 +1,14 @@
 ﻿using Telegram.Bot.Polling;
 using Telegram.Bot;
+using NotificationsBot.Interfaces;
 
-namespace NotificationsBot.Interfaces.Impl;
+namespace NotificationsBot.Services;
 
 /// <summary>
 /// Сервис приема <seealso cref="Telegram.Bot.Types.Update">обновлений</seealso> обновлений из чата 
 /// </summary>
 /// <typeparam name="TUpdateHandler">The type of the update handler.</typeparam>
-/// <seealso cref="NotificationsBot.Interfaces.IReceiverService" />
+/// <seealso cref="IReceiverService" />
 public abstract class ReceiverServiceBase<TUpdateHandler>(ITelegramBotClient botClient, TUpdateHandler updateHandler, ILogger<ReceiverServiceBase<TUpdateHandler>> logger)
     : IReceiverService where TUpdateHandler : IUpdateHandler
 {

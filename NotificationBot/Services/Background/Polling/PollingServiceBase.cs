@@ -1,10 +1,12 @@
-﻿namespace NotificationsBot.Interfaces.Impl;
+﻿using NotificationsBot.Interfaces;
+
+namespace NotificationsBot.Services.Background.Polling;
 
 /// <summary>
 /// Фоновый сервис опроса сервера телеграмм на наличие  <seealso cref="Telegram.Bot.Types.Update">обновлений</seealso>
 /// </summary>
 /// <typeparam name="TReceiverService">The type of the receiver service.</typeparam>
-/// <seealso cref="Microsoft.Extensions.Hosting.BackgroundService" />
+/// <seealso cref="BackgroundService" />
 public abstract class PollingServiceBase<TReceiverService>(IServiceProvider serviceProvider, ILogger<PollingServiceBase<TReceiverService>> logger)
     : BackgroundService where TReceiverService : IReceiverService
 {

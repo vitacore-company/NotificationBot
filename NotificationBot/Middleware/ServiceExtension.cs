@@ -2,7 +2,10 @@
 using Microsoft.Extensions.Options;
 using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
-using NotificationsBot.Interfaces.Impl;
+using NotificationsBot.Services;
+using NotificationsBot.Services.Background;
+using NotificationsBot.Services.Background.Polling;
+using System.Reflection;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 
@@ -30,8 +33,14 @@ public static class ServiceExtension
         services.AddScoped<IUpdateHandler, TelegramCommandHandler>();
         services.AddScoped<ReceiverService>();
         services.AddScoped<IExistUserChecker, ExistUserChecker>();
+        services.AddScoped<IUserHolder, UserHolderService>();
+        services.AddScoped<INotificationTypesService, NotificationTypesService>();
+        services.AddHostedService<BackgroundUserService>();
         services.AddHostedService<PollingService>();
-
+        services.RegisterHandler();
+        services.AddMessageHandlers(Assembly.GetExecutingAssembly());
+        services.AddScoped<IHandlerFactory, HandlerFactory>();
+        services.AddTransient<ExceptionMiddleware>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
@@ -65,7 +74,7 @@ public static class ServiceExtension
     public static WebApplicationBuilder AddAllServicesInApplicationBuilder(this WebApplicationBuilder hostApplicationBuilder)
     {
 #if DEBUG
-        foreach (var c in hostApplicationBuilder.Configuration.AsEnumerable())
+        foreach (KeyValuePair<string, string?> c in hostApplicationBuilder.Configuration.AsEnumerable())
         {
             Console.WriteLine(c.Key + " = " + c.Value);
         }
@@ -92,22 +101,24 @@ public static class ServiceExtension
 
         webApplication.MapControllers();
 
-        using (var scope = webApplication.Services.CreateScope())
+        using (IServiceScope scope = webApplication.Services.CreateScope())
         {
-            var services = scope.ServiceProvider;
+            IServiceProvider services = scope.ServiceProvider;
 
             try
             {
-                var dbContext = services.GetRequiredService<AppContext>();
+                AppContext dbContext = services.GetRequiredService<AppContext>();
                 dbContext.Database.Migrate();
             }
             catch (Exception ex)
             {
-                var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
+                ILogger<Program> logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                 logger.LogError(ex, "An error occurred while migrating or seeding the database.");
                 throw;
             }
         }
+
+        webApplication.UseMiddleware<ExceptionMiddleware>();
 
         return webApplication;
     }

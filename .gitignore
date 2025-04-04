@@ -364,3 +364,4 @@ FodyWeavers.xsd
 *.db
 *.db-shm
 *.db-wal
+/NotificationBot/appsettings.Development.json
