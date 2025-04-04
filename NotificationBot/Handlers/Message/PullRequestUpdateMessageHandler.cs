@@ -27,6 +27,8 @@ namespace NotificationsBot.Handlers
             }
 
             HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
+            users.Add(resource.Resource.CreatedBy.UniqueName);
+
             Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
             if (match.Success)
             {
