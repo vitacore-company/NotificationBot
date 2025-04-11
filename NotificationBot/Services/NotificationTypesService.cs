@@ -17,7 +17,7 @@ namespace NotificationsBot.Services
         {
             if (chatId != -1 && !string.IsNullOrEmpty(project))
             {
-                Projects? _project = await _context.Projects.Where(x => x.Name == project).FirstOrDefaultAsync();
+                Projects? _project = await _context.Projects.Where(x => x.Name == project).Include(x => x.NotificationTypes).FirstOrDefaultAsync();
 
                 if (_project != null)
                 {
@@ -46,7 +46,7 @@ namespace NotificationsBot.Services
             {
                 return [];
             }
-            Projects? _project = await _context.Projects.Where(x => x.Name == project).FirstOrDefaultAsync();
+            Projects? _project = await _context.Projects.Where(x => x.Name == project).Include(x => x.NotificationTypes).FirstOrDefaultAsync();
             NotificationTypes? type = await _context.NotificationTypes.Where(x => x.EventDescription == notificationType).FirstOrDefaultAsync();
 
             if (type != null && _project != null)
@@ -87,7 +87,8 @@ namespace NotificationsBot.Services
         {
             List<string> userNotifys = new List<string>();
             List<string> typesWithoutEmoji = new List<string>();
-            List<NotificationsOnProjectChat> notifys = await _context.NotificationsOnProjectChat.Where(x => x.UserId == chatId && x.Project == project).Include(x => x.NotificationTypes).ToListAsync();
+
+            List<NotificationsOnProjectChat> notifys = await _context.NotificationsOnProjectChat.Where(x => x.UserId == chatId && x.Project == project && project.NotificationTypes.Contains(x.NotificationTypes)).Include(x => x.NotificationTypes).ToListAsync();
 
             foreach (NotificationsOnProjectChat notify in notifys)
             {
@@ -95,18 +96,12 @@ namespace NotificationsBot.Services
                 typesWithoutEmoji.Add(notify.NotificationTypes.EventDescription);
             }
 
-            foreach (string notify in getNotificationsTypes().Except(typesWithoutEmoji))
+            foreach (string notify in project.NotificationTypes.Select(x => x.EventDescription).Except(typesWithoutEmoji))
             {
                 userNotifys.Add(char.ConvertFromUtf32(0x274C) + notify);
             }
 
             return userNotifys;
         }
-
-        private List<string> getNotificationsTypes()
-        {
-            return _context.NotificationTypes.Select(x => x.EventDescription).ToList();
-        }
-
     }
 }
