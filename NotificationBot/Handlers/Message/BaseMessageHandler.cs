@@ -32,7 +32,9 @@ public abstract class BaseMessageHandler
     {
         if (users.Count > 0)
         {
-            int? notificationTypeId = await _context.NotificationTypes.Where(x => x.EventType == eventType).Select(x => x.Id).SingleOrDefaultAsync();
+            int? notificationTypeId = await _context.NotificationTypes.Where(x => x.EventType == eventType)
+                .Where(x => x.Projects.Any(x => x.Name == project))
+                .Select(x => x.Id).SingleOrDefaultAsync();
             int? projectId = await _context.Projects.Where(x => x.Name == project).Select(x => x.Id).SingleOrDefaultAsync();
 
             if (notificationTypeId.HasValue && projectId.HasValue)

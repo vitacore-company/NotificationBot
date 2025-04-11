@@ -7,6 +7,9 @@ public class Projects
 {
     [Key]
     public int Id { get; set; }
+
     [AllowNull]
     public string Name { get; set; }
+
+    public List<NotificationTypes> NotificationTypes { get; set; } = new List<NotificationTypes>();
 }
