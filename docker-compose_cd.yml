@@ -9,7 +9,8 @@
     volumes:
       - db:/var/lib/postgresql/data
     env_file:
-      - .env
+      - public.env
+      - private.env
     environment:
       - 'POSTGRES_USER=${POSTGRES_USER}'
       - 'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
@@ -35,7 +36,8 @@
       postgresql:
           condition: service_healthy
     env_file:
-      - .env
+      - public.env
+      - private.env      
 
 volumes:
   db:
