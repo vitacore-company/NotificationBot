@@ -97,9 +97,14 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                     List<string> projects = _notificationTypesService.GetProjects();
 
                                     InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-                                    foreach (string project in projects)
+                                    for (int i = 0; i < projects.Count; i++)
                                     {
-                                        inlineKeyboard.AddButton(new InlineKeyboardButton(project, project));
+                                        if (i % 3 == 0)
+                                        {
+                                            inlineKeyboard.AddNewRow();
+                                        }
+
+                                        inlineKeyboard.AddButton(new InlineKeyboardButton(projects[i], projects[i]));
                                     }
 
                                     await _botClient.EditMessageReplyMarkup(

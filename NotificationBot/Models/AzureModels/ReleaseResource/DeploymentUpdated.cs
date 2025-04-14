@@ -565,7 +565,7 @@ namespace NotificationsBot.Models.AzureModels.Release
         public DateTime finishTime { get; set; }
         public string status { get; set; }
         public int rank { get; set; }
-        public List<object> issues { get; set; }
+        public List<Issue> issues { get; set; }
         public string agentName { get; set; }
         public Task task { get; set; }
     }
@@ -596,5 +596,10 @@ namespace NotificationsBot.Models.AzureModels.Release
         public string href { get; set; }
     }
 
-
+    public class Issue
+    {
+        public string issueType { get; set; }
+        public string message { get; set; }
+        public Data data { get; set; }
+    }
 }
