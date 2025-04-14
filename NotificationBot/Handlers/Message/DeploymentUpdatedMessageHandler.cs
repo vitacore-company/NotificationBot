@@ -16,7 +16,7 @@ namespace NotificationsBot.Handlers
         {
             string eventType = resource.resource.environment.releaseDefinition.path.Contains("Regions") ? resource.resource.environment.releaseDefinition.path.Replace("\\", "\\\\") : "\\\\";
 
-            var notificationType = _context.NotificationTypes.Where(x => x.EventType == eventType).Select(x => x.Id).FirstOrDefault();
+            int notificationType = _context.NotificationTypes.Where(x => x.EventType == eventType).Select(x => x.Id).FirstOrDefault();
 
             if (notificationType > 0)
             {
@@ -47,12 +47,12 @@ namespace NotificationsBot.Handlers
                     sb.Append("*Project*: ");
                     sb.Append(FormatMarkdownToTelegram(resource.resource.project.name));
                     sb.AppendLine();
-
-                    foreach (ReleaseDeployPhase? item in resource.resource.environment.deploySteps.Select(x => x.releaseDeployPhases).FirstOrDefault())
+                    List<ReleaseDeployPhase> deployPhaseList = resource.resource.environment.deploySteps.Select(x => x.releaseDeployPhases).FirstOrDefault() ?? new List<ReleaseDeployPhase>();
+                    foreach (ReleaseDeployPhase item in deployPhaseList)
                     {
                         foreach (DeploymentJob deployItem in item.deploymentJobs)
                         {
-                            foreach (var task in deployItem.tasks)
+                            foreach (Models.AzureModels.Release.Task task in deployItem.tasks)
                             {
                                 if (task.status == item.status && task.issues.Count > 0)
                                 {
