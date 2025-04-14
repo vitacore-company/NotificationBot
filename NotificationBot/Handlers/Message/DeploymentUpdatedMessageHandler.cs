@@ -14,7 +14,8 @@ namespace NotificationsBot.Handlers
 
         public async System.Threading.Tasks.Task Handle(Root resource)
         {
-            string eventType = resource.resource.environment.releaseDefinition.path.Contains("Debug") ? "\\\\" : resource.resource.environment.releaseDefinition.path.Replace("\\", "\\\\");
+            string eventType = resource.resource.environment.releaseDefinition.path.Contains("Regions") ? resource.resource.environment.releaseDefinition.path.Replace("\\", "\\\\") : "\\\\";
+
             var notificationType = _context.NotificationTypes.Where(x => x.EventType == eventType).Select(x => x.Id).FirstOrDefault();
 
             if (notificationType > 0)
