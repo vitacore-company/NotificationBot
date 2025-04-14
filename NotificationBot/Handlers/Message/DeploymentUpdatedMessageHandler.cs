@@ -36,7 +36,7 @@ namespace NotificationsBot.Handlers
 
                     StringBuilder sb = new StringBuilder();
 
-                    sb.AppendLine($"Deplayment on stage {link} {resource.resource.deployment.deploymentStatus}");
+                    sb.AppendLine($"Deployment on stage {link} {resource.resource.deployment.deploymentStatus}");
                     sb.Append("*Release Definition*: ");
                     sb.Append(FormatMarkdownToTelegram(resource.resource.environment.releaseDefinition.name));
                     sb.AppendLine();
