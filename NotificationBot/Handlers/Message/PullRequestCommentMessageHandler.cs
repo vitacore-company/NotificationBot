@@ -20,11 +20,6 @@ namespace NotificationsBot.Handlers
 
         public async Task Handle(PullRequestCommentedPayload resource)
         {
-            if (resource.Message.Text.Contains("edited"))
-            {
-                return;
-            }
-
             HashSet<string> users = resource.Resource.pullRequest.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
             users.Add(resource.Resource.pullRequest.CreatedBy.UniqueName); // - добавляем автора пра отдельно
 
