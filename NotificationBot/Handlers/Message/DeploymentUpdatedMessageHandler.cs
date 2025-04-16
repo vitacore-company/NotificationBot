@@ -68,7 +68,7 @@ namespace NotificationsBot.Handlers
                     }
 
                     sb.AppendLine();
-                    sb.AppendLine(FormatMarkdownToTelegram($"#{resource.resource.project.name} #Deploy"));
+                    sb.AppendLine(FormatMarkdownToTelegram($"#{resource.resource.project.name.Replace('.', '_')} #Deploy"));
 
                     string message = sb.ToString();
 
