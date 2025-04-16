@@ -11,7 +11,7 @@ namespace NotificationsBot.Migrations
 {
     [DbContext(typeof(AppContext))]
     [Migration("20250411120234_initistprojects")]
-    partial class initistprojects
+    partial class Initistprojects
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
