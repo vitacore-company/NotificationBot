@@ -1,5 +1,5 @@
-﻿using Microsoft.AspNet.WebHooks.Payloads;
-using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Interfaces;
+using NotificationsBot.Models.AzureModels.PullRequetUpdated;
 using NotificationsBot.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -13,14 +13,19 @@ namespace NotificationsBot.Handlers
     /// git.pullrequest.updated
     /// </remarks>
     /// </summary>
-    public class PullRequestUpdateMessageHandler : BaseMessageHandler, IMessageHandler<GitPullRequestUpdatedPayload>
+    public class PullRequestUpdateMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestUpdatedCustomPayload>
     {
         public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
         {
         }
 
-        public async Task Handle(GitPullRequestUpdatedPayload resource)
+        public async Task Handle(PullRequestUpdatedCustomPayload resource)
         {
+            if (resource.Resource.IsDraft)
+            {
+                return;
+            }
+
             if (resource.Message.Text.Contains("reviewer list"))
             {
                 return;
@@ -48,6 +53,9 @@ namespace NotificationsBot.Handlers
             sb.Append("*Description*: ");
             sb.AppendLine();
             sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
+            sb.AppendLine();
+            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.LastMergeCommit.Comment));
+
             sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
             string message = sb.ToString();
 

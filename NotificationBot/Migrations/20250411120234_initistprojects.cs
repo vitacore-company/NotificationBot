@@ -5,7 +5,7 @@
 namespace NotificationsBot.Migrations
 {
     /// <inheritdoc />
-    public partial class initistprojects : Migration
+    public partial class Initistprojects : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
