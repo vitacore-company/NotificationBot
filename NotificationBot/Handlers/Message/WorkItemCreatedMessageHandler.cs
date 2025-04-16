@@ -56,6 +56,9 @@ namespace NotificationsBot.Handlers
 
                 sb.Replace($"{resource.Resource.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Fields.SystemTeamProject, itemId, resource.Resource.Fields.SystemWorkItemType));
 
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Fields.SystemTeamProject.Replace('.', '_')} #WorkItemCreate"));
+
                 string message = sb.ToString();
 
                 if (chatIds.Count > 0)

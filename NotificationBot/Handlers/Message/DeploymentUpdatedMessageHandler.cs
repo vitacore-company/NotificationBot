@@ -47,7 +47,9 @@ namespace NotificationsBot.Handlers
                     sb.Append("*Project*: ");
                     sb.Append(FormatMarkdownToTelegram(resource.resource.project.name));
                     sb.AppendLine();
+
                     List<ReleaseDeployPhase> deployPhaseList = resource.resource.environment.deploySteps.Select(x => x.releaseDeployPhases).FirstOrDefault() ?? new List<ReleaseDeployPhase>();
+                    
                     foreach (ReleaseDeployPhase item in deployPhaseList)
                     {
                         foreach (DeploymentJob deployItem in item.deploymentJobs)
@@ -64,6 +66,9 @@ namespace NotificationsBot.Handlers
                             }
                         }
                     }
+
+                    sb.AppendLine();
+                    sb.AppendLine(FormatMarkdownToTelegram($"#{resource.resource.project.name.Replace('.', '_')} #Deploy"));
 
                     string message = sb.ToString();
 

@@ -54,9 +54,13 @@ namespace NotificationsBot.Handlers
             sb.AppendLine();
             sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
             sb.AppendLine();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.LastMergeCommit.Comment));
+            sb.AppendLine($"`{FormatMarkdownToTelegram(resource.Resource.LastMergeCommit.Comment)}`");
 
             sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+
+            sb.AppendLine();
+            sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_')} #PullRequestUpdate"));
+
             string message = sb.ToString();
 
             _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} измененен, сообщение отправлено {string.Join(',', chatIds)}");

@@ -21,8 +21,6 @@ public class TelegramNotificationService : INotificationService
 
     public async Task Notify(JsonElement element, string eventType)
     {
-        _logger.LogInformation($"Вызов эвента с типом {eventType}");
-
         if (LocalMessageHandlers.Handlers.TryGetValue(eventType, out Type? handlerType))
         {
             await _handlerFactory.ProcessHandler(handlerType, element.ToString());

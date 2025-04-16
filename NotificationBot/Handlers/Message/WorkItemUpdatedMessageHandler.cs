@@ -80,6 +80,10 @@ namespace NotificationsBot.Handlers
                 string itemId = matchItemId.Groups[1].Value;
 
                 sb.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
+
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Revision.Fields.SystemTeamProject.Replace('.', '_')} #WorkItemUpdate"));
+
                 string messageText = sb.ToString();
 
                 List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
