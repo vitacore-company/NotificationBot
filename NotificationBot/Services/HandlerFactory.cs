@@ -50,7 +50,6 @@ namespace NotificationsBot.Services
                         System.Reflection.MethodInfo? handleMethod = handler.GetType().GetMethod(nameof(IMessageHandler<object>.Handle));
                         if (handleMethod != null)
                         {
-                            _logger.LogInformation($"Вызов обработчика {handleMethod.DeclaringType?.FullName}");
                             object? taskObject = handleMethod.Invoke(handler, new[] { deserializedObject });
                             if (taskObject != null && taskObject is Task task)
                             {
