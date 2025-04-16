@@ -276,6 +276,10 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                         sb.AppendLine("*Смена состояния сборки*");
                         sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о изменении состояния сборки человека, который открыл пуллреквест"));
                         sb.AppendLine();
+                        sb.AppendLine("*Оповещения АКУЗа*");
+                        sb.AppendLine(Markdown.Escape("Допустим, если включить уведомления NAO, будут приходить все уведомления со сборок в папке \\\\Regions\\\\NAO, так же со всеми остальными регионами"));
+                        sb.AppendLine(Markdown.Escape("Если включить Others, будут приходить оповещения о всех сборках, кроме регионов (больше нужно для тех, кто собирает версии)"));
+                        sb.AppendLine();
                         sb.AppendLine(char.ConvertFromUtf32(0x2757) + Markdown.Escape("Оповещения не приходят тому, кто триггернул") + char.ConvertFromUtf32(0x2757));
 
                         await _botClient.SendMessage(msg.Chat, sb.ToString(), ParseMode.MarkdownV2);

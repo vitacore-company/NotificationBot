@@ -1,5 +1,8 @@
 ﻿using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.BuildStateChanged;
+using NotificationsBot.Utils;
+using System.Text;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
 
 namespace NotificationsBot.Handlers
@@ -25,8 +28,33 @@ namespace NotificationsBot.Handlers
 
             if (chatIds.Count > 0)
             {
+                StringBuilder sb = new StringBuilder();
+
+                sb.Append($"Build {Utilites.BuildLinkConfigure(resource.Resource.BuildNumber, resource.Resource.Project.Name, resource.Resource.Id)} {resource.Resource.Result}");
+                sb.AppendLine();
+                sb.Append("*Project*: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Project.Name));
+                sb.AppendLine();
+                sb.Append("*Definition*: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Definition.Name));
+
+                if (resource.Resource.Result.Equals("failed"))
+                {
+                    string messageText = Regex.Replace(resource.DetailedMessage.Text, @"^Build.*?failed\r\n\r\n- ", "", RegexOptions.Multiline);
+                    if (!string.IsNullOrEmpty(messageText))
+                    {
+                        sb.AppendLine();
+                        sb.Append($"```{FormatMarkdownToTelegram(messageText)}```");
+                    }
+                }
+
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Project.Name.Replace('.', '_').Replace("(agile)", "")} #Build"));
+
+                string message = sb.ToString();
+
                 _logger.LogInformation($"Состояние сборки изменено, сообщение отправлено {string.Join(',', chatIds)}");
-                _ = _botClient.SendMessage(chatIds.First(), FormatMarkdownToTelegram(resource.Message.Text), Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+                _ = _botClient.SendMessage(chatIds.First(), message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
             }
         }
     }

@@ -47,7 +47,7 @@ namespace NotificationsBot.Handlers
             sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
 
             sb.AppendLine();
-            sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.pullRequest.Repository.Project.Name.Replace('.', '_')} #PullRequestComment"));
+            sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.pullRequest.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestComment"));
 
             string message = sb.ToString();
 
