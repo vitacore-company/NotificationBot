@@ -82,7 +82,7 @@ namespace NotificationsBot.Handlers
                 sb.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
 
                 sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Revision.Fields.SystemTeamProject.Replace('.', '_')} #WorkItemUpdate"));
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Revision.Fields.SystemTeamProject.Replace('.', '_').Replace("(agile)", "")} #WorkItemUpdate"));
 
                 string messageText = sb.ToString();
 
