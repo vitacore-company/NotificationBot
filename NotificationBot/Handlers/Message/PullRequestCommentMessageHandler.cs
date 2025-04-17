@@ -26,7 +26,7 @@ namespace NotificationsBot.Handlers
             string author = resource.Resource.comment.author.uniqueName;
 
             users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
-            List<long> chatIds = await FilteredByNotifyUsers(
+            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                 resource.EventType,
                 resource.Resource.pullRequest.Repository.Project.Name,
                 await _userHolder.GetChatIdsByLogin(users.ToList()));
@@ -41,8 +41,6 @@ namespace NotificationsBot.Handlers
             sb.AppendLine();
             sb.Append("*Description*: ");
             sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.pullRequest.Description));
-            sb.AppendLine();
-            sb.AppendLine($"`{FormatMarkdownToTelegram(resource.Resource.comment.content)}`");
 
             sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
 
@@ -52,10 +50,8 @@ namespace NotificationsBot.Handlers
             string message = sb.ToString();
 
             _logger.LogInformation($"Запрос на вытягивание {resource.Resource.pullRequest.PullRequestId} прокомментирован, сообщение отправлено {string.Join(',', chatIds)}");
-            foreach (long chatId in chatIds)
-            {
-                _ =_botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-            }
+
+            SendMessages(sb, chatIds);
         }
     }
 }

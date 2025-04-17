@@ -29,7 +29,7 @@ namespace NotificationsBot.Handlers
                 users.RemoveWhere(x => x.Contains(remove));
             }
 
-            List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
+            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
             sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
@@ -47,13 +47,9 @@ namespace NotificationsBot.Handlers
             sb.AppendLine();
             sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestCreate"));
 
-            string message = sb.ToString();
-
             _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} создан, сообщение отправлено {string.Join(',', chatIds)}");
-            foreach (long chatId in chatIds)
-            {
-                _ = _botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-            }
+
+            SendMessages(sb, chatIds);
         }
     }
 }

@@ -84,15 +84,11 @@ namespace NotificationsBot.Handlers
                 sb.AppendLine();
                 sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Revision.Fields.SystemTeamProject.Replace('.', '_').Replace("(agile)", "")} #WorkItemUpdate"));
 
-                string messageText = sb.ToString();
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
-                List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
 
-                if (chatIds.Count > 0)
-                {
-                    _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {chatIds.First()}");
-                    _ = _botClient.SendMessage(chatIds.First(), messageText, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-                }
+                SendMessages(sb, chatIds);
             }
         }
     }

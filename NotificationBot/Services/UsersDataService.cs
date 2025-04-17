@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using Microsoft.EntityFrameworkCore;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Models.Database;
 using System.Diagnostics.CodeAnalysis;
 
@@ -81,7 +82,7 @@ public class UsersDataService : IUsersDataService
     /// </exception>
     public Task SaveNewUser(string? login, long chatId, long userId)
     {
-        if (chatId == -1 )
+        if (chatId == -1)
         {
             throw new ArgumentException($"Параметр {nameof(chatId)} равный -1 не может быть сохранен", nameof(chatId));
         }
@@ -142,6 +143,27 @@ public class UsersDataService : IUsersDataService
         _context.Users.Update(user);
         _context.SaveChanges();
         return Task.CompletedTask;
+    }
+
+    public async Task SaveTopicToChatId(int threadId, long chatId)
+    {
+        Topic th = new Topic() { ChatId = chatId, Id = threadId };
+
+        await _context.Topics.AddAsync(th);
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task UpdateTopic(int threadId, long chatId, string project)
+    {
+        int? projectId = _context.Projects.Where(x => x.Name == project).Select(x => x.Id).FirstOrDefault();
+
+        if (projectId > 0)
+        {
+            _ = await _context.Topics.Where(x => x.ChatId == chatId && x.Id == threadId).ExecuteUpdateAsync(update => update.SetProperty(a => a.ProjectId, projectId));
+
+            await _context.SaveChangesAsync();
+        }
     }
 }
 

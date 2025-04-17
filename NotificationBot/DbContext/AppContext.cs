@@ -10,6 +10,8 @@ public class AppContext : DbContext
 
     public DbSet<NotificationsOnProjectChat> NotificationsOnProjectChat { get; set; }
 
+    public DbSet<Topic> Topics { get; set; }
+
     public AppContext(DbContextOptions<AppContext> options) : base(options)
     {
     }

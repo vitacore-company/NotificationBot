@@ -24,7 +24,7 @@ namespace NotificationsBot.Handlers
 
                 if (users.Count > 0)
                 {
-                    List<long> chatIds = await FilteredByNotifyUsers(
+                    Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                         eventType,
                         resource.resource.project.name,
                         await _userHolder.GetChatIdsByLogin(users));
@@ -70,13 +70,9 @@ namespace NotificationsBot.Handlers
                     sb.AppendLine();
                     sb.AppendLine(FormatMarkdownToTelegram($"#{resource.resource.project.name.Replace('.', '_').Replace("(agile)", "")} #Deploy"));
 
-                    string message = sb.ToString();
-
                     _logger.LogInformation($"Деплой запущен, сообщение отправлено {string.Join(',', chatIds)}");
-                    foreach (long chatId in chatIds)
-                    {
-                        _ = _botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-                    }
+
+                    SendMessages(sb, chatIds);
                 }
             }
         }
