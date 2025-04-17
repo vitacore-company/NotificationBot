@@ -41,6 +41,8 @@ namespace NotificationsBot.Handlers
             sb.AppendLine();
             sb.Append("*Description*: ");
             sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.pullRequest.Description));
+            sb.AppendLine();
+            sb.AppendLine($"`{FormatMarkdownToTelegram(resource.Resource.comment.content)}`");
 
             sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
 

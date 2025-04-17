@@ -11,12 +11,10 @@ namespace NotificationsBot.Services;
 public class TelegramNotificationService : INotificationService
 {
     private readonly IHandlerFactory _handlerFactory;
-    private readonly ILogger<TelegramNotificationService> _logger;
 
-    public TelegramNotificationService(IHandlerFactory handlerFactory, ILogger<TelegramNotificationService> logger)
+    public TelegramNotificationService(IHandlerFactory handlerFactory)
     {
         _handlerFactory = handlerFactory;
-        _logger = logger;
     }
 
     public async Task Notify(JsonElement element, string eventType)
