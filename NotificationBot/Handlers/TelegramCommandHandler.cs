@@ -235,10 +235,12 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
                                     if (!await _usersDataService.IsContainUser(msg.Chat.Id))
                                     {
                                         await _usersDataService.SaveNewUser(msg.Chat.Title, msg.Chat.Id, msg.Chat.Id);
+                                    }
 
+                                    if (!await _usersDataService.IsContaionTopic(msg.MessageThreadId ?? -1, msg.Chat.Id))
+                                    {
                                         await _usersDataService.SaveTopicToChatId(msg.MessageThreadId ?? -1, msg.Chat.Id);
                                     }
-                                    ;
 
                                     await sendBaseInformation(msg, msg.MessageThreadId ?? -1);
                                 }
@@ -289,14 +291,12 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 
                 case string when msg.Text.Contains("/set"):
                     {
-                        if (msg.Chat.Type != ChatType.Group || msg.Chat.Type != ChatType.Supergroup)
+                        if (msg.Chat.Type == ChatType.Group || msg.Chat.Type == ChatType.Supergroup)
                         {
-                            return;
+                            string project = msg.Text.Replace("/set ", "");
+
+                            await _usersDataService.UpdateTopic(msg.MessageThreadId ?? -1, msg.Chat.Id, project);
                         }
-
-                        string project = msg.Text.Replace("/set ", "");
-
-                        await _usersDataService.UpdateTopic(msg.MessageThreadId ?? -1, msg.Chat.Id, project);
                     }
                     break;
 

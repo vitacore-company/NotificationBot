@@ -12,6 +12,6 @@ namespace NotificationsBot.Models.Database
         public long ChatId { get; set; }
 
         [ForeignKey("Projects")]
-        public int? ProjectId { get; set; }
+        public int? ProjectsId { get; set; }
     }
 }

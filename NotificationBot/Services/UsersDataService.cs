@@ -160,10 +160,17 @@ public class UsersDataService : IUsersDataService
 
         if (projectId > 0)
         {
-            _ = await _context.Topics.Where(x => x.ChatId == chatId && x.Id == threadId).ExecuteUpdateAsync(update => update.SetProperty(a => a.ProjectId, projectId));
+            _ = await _context.Topics.Where(x => x.ChatId == chatId && x.Id == threadId).ExecuteUpdateAsync(update => update.SetProperty(a => a.ProjectsId, projectId));
 
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task<bool> IsContaionTopic(int threadId, long chatId)
+    {
+        Topic? topic = await _context.Topics.Where(x => x.Id == threadId && x.ChatId == chatId).FirstOrDefaultAsync();
+
+        return topic != null;
     }
 }
 

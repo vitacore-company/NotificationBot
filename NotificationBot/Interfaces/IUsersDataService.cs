@@ -69,4 +69,13 @@ public interface IUsersDataService
     /// <param name="project"></param>
     /// <returns></returns>
     public Task UpdateTopic(int threadId, long chatId, string project);
+
+    /// <summary>
+    /// Апдейт топика
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="chatId"></param>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    public Task<bool> IsContaionTopic(int threadId, long chatId);
 }

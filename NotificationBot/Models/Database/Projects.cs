@@ -12,4 +12,6 @@ public class Projects
     public string Name { get; set; }
 
     public List<NotificationTypes> NotificationTypes { get; set; } = new List<NotificationTypes>();
+
+    public List<Topic> Topics { get; set; } = new List<Topic>();
 }
