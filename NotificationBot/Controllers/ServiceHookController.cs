@@ -1,5 +1,4 @@
-﻿using Microsoft.AspNet.WebHooks.Payloads;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NotificationsBot.Interfaces;
 using System.Text.Json;
 

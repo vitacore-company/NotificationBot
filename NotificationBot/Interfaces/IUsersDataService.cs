@@ -52,4 +52,30 @@ public interface IUsersDataService
     /// <param name="chatId">Идентификатор чата.</param>
     /// <returns></returns>
     public Task<string> GetStatus(long chatId);
+
+    /// <summary>
+    /// Добавление топика
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="chatId"></param>
+    /// <returns></returns>
+    public Task SaveTopicToChatId(int threadId, long chatId);
+
+    /// <summary>
+    /// Апдейт топика
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="chatId"></param>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    public Task UpdateTopic(int threadId, long chatId, string project);
+
+    /// <summary>
+    /// Апдейт топика
+    /// </summary>
+    /// <param name="threadId"></param>
+    /// <param name="chatId"></param>
+    /// <param name="project"></param>
+    /// <returns></returns>
+    public Task<bool> IsContaionTopic(int threadId, long chatId);
 }

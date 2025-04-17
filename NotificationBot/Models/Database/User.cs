@@ -25,4 +25,6 @@ public class User
     /// Идентификатор пользователя
     /// </summary>
     public long UserId { get; set; }
+
+    public List<Topic> Topics { get; set; } = new List<Topic>();
 }

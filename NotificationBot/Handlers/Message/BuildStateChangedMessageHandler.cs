@@ -24,7 +24,7 @@ namespace NotificationsBot.Handlers
             HashSet<string> users = new HashSet<string>();
 
             users.Add(resource.Resource.RequestedFor.UniqueName);
-            List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
+            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             if (chatIds.Count > 0)
             {
@@ -51,10 +51,9 @@ namespace NotificationsBot.Handlers
                 sb.AppendLine();
                 sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Project.Name.Replace('.', '_').Replace("(agile)", "")} #Build"));
 
-                string message = sb.ToString();
-
                 _logger.LogInformation($"Состояние сборки изменено, сообщение отправлено {string.Join(',', chatIds)}");
-                _ = _botClient.SendMessage(chatIds.First(), message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
+
+                SendMessages(sb, chatIds);
             }
         }
     }
