@@ -43,7 +43,7 @@ namespace NotificationsBot.Handlers
             Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
+            sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.CreatedBy.DisplayName} opened the pull request"));
             sb.Append("*Project*: ");
             sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
             sb.AppendLine();
@@ -53,8 +53,6 @@ namespace NotificationsBot.Handlers
             sb.Append("*Description*: ");
             sb.AppendLine();
             sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
-            sb.AppendLine();
-            sb.AppendLine($"`{FormatMarkdownToTelegram(resource.Resource.LastMergeCommit.Comment)}`");
 
             sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
 
