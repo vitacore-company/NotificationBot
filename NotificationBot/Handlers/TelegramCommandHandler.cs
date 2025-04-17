@@ -394,11 +394,6 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
             inlineKeyboard.AddButton(InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"));
         }
 
-        if (threadId < 0)
-        {
-            threadId = null;
-        }
-
         await _botClient.SendMessage(
             msg.Chat.Id,
             "Выберите действие",
