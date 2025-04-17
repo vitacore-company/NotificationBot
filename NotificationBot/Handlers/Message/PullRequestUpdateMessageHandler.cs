@@ -43,7 +43,7 @@ namespace NotificationsBot.Handlers
             Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.CreatedBy.DisplayName} opened the pull request"));
+            sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.CreatedBy.DisplayName} update pull request"));
             sb.Append("*Project*: ");
             sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
             sb.AppendLine();
