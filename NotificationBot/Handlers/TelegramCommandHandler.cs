@@ -217,7 +217,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     /// <param name="msg">Cообщение</param>
     private async Task HandleOnMessage(Message msg)
     {
-        var botName = _botClient.GetMe().Result.Username;
+        string? botName = _botClient.GetMe().Result.Username;
         try
         {
             _logger.LogInformation($"Вызвана команда {msg.Text} пользователем {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username}");

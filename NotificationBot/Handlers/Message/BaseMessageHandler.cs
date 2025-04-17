@@ -67,7 +67,7 @@ public abstract class BaseMessageHandler
     {
         string message = sb.ToString();
 
-        foreach (var item in chats)
+        foreach (KeyValuePair<long, int?> item in chats)
         {
             int? thread = null;
 
