@@ -291,7 +291,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 
                 case string when msg.Text.Contains("/set"):
                     {
-                        if (msg.Chat.Type == ChatType.Group || msg.Chat.Type == ChatType.Supergroup)
+                        if (msg.Chat.Type is ChatType.Group or ChatType.Supergroup)
                         {
                             string project = msg.Text.Replace("/set ", "");
 
