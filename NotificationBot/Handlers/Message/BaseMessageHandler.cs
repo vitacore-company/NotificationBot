@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.Services.Common;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.Database;
 using System.Text;
+using System.Text.RegularExpressions;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
 
@@ -104,6 +105,20 @@ public abstract class BaseMessageHandler
         }
 
         return [];
+    }
+
+    protected string GetLinkFromMarkdown(string message)
+    {
+        Regex rg = new Regex("(?:__|[*#])|\\[(.*?)\\]\\(.*?\\)");
+
+        Match match = rg.Match(message);
+
+        if (match.Success)
+        {
+            return match.Value;
+        }
+
+        return string.Empty;
     }
 
     /// <summary>

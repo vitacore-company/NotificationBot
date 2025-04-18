@@ -32,7 +32,7 @@ namespace NotificationsBot.Handlers
                 await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text));
+            sb.AppendLine($"{FormatMarkdownToTelegram(resource.Resource.comment.author.displayName)} {GetLinkFromMarkdown(resource.DetailedMessage.Markdown)} pull request");
             sb.Append("*Project*: ");
             sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name));
             sb.AppendLine();
@@ -43,8 +43,6 @@ namespace NotificationsBot.Handlers
             sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.pullRequest.Description));
             sb.AppendLine();
             sb.AppendLine($"`{FormatMarkdownToTelegram(resource.Resource.comment.content)}`");
-
-            sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
 
             sb.AppendLine();
             sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.pullRequest.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestComment"));
