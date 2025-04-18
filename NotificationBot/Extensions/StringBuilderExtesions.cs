@@ -14,36 +14,36 @@ namespace NotificationsBot.Extensions
 
         public static StringBuilder AddProject(this StringBuilder sb, string projectText)
         {
-            sb.AppendLine();
             sb.Append("*Project*: ");
             sb.Append(projectText);
+            sb.AppendLine();
 
             return sb;
         }
 
         public static StringBuilder AddTitle(this StringBuilder sb, string titleText)
         {
-            sb.AppendLine();
             sb.Append("*Title*: ");
             sb.Append(titleText);
+            sb.AppendLine();
 
             return sb;
         }
 
         public static StringBuilder AddDescription(this StringBuilder sb, string descrText)
         {
-            sb.AppendLine();
             sb.Append("*Description*: ");
             sb.AppendLine(descrText);
+            sb.AppendLine();
 
             return sb;
         }
 
         public static StringBuilder AddDefinition(this StringBuilder sb, string defText)
         {
-            sb.AppendLine();
             sb.Append("*Definition*: ");
             sb.AppendLine(defText);
+            sb.AppendLine();
 
             return sb;
         }

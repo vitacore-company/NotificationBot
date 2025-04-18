@@ -41,18 +41,16 @@ namespace NotificationsBot.Handlers
             users.Add(resource.Resource.CreatedBy.UniqueName);
 
             Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
-            string initiator = string.Empty;
+
             if (match.Success)
             {
                 string remove = match.Groups[1].Value;
-                initiator = match.Value;
-
                 users.RemoveWhere(x => x.Contains(remove));
             }
 
             if (resource.Message.Text.Contains("published the pull request"))
             {
-                await redirectToPullRequestCreate(resource, initiator);
+                await redirectToPullRequestCreate(resource, resource.Resource.CreatedBy.DisplayName);
                 return;
             }
 
@@ -86,7 +84,7 @@ namespace NotificationsBot.Handlers
             createPayload.DetailedMessage = new PayloadMessage();
             createPayload.Message = new PayloadMessage();
 
-            string markdownLink = Utilites.PullRequestLinkConfigure(payload.Resource.Repository.Project.Name, payload.Resource.Repository.Name, payload.Resource.PullRequestId, "pull request");
+            string markdownLink = linkToRedirect(payload.Resource.Repository.Project.Name, payload.Resource.Repository.Name, payload.Resource.PullRequestId);
 
             createPayload.Resource.CreatedBy = new GitUser() { DisplayName = initiator };
             createPayload.Resource.Repository = payload.Resource.Repository;
@@ -96,8 +94,19 @@ namespace NotificationsBot.Handlers
             createPayload.Resource.Reviewers.AddRange(payload.Resource.Reviewers);
             createPayload.Resource.Title = payload.Resource.Title;
             createPayload.Resource.Description = payload.Resource.Description;
+            createPayload.Resource.PullRequestId = payload.Resource.PullRequestId;
 
             await _createHandler.ProcessHandler(typeof(PullRequestCreateMessageHandler), JsonConvert.SerializeObject(createPayload));
+        }
+
+        private string linkToRedirect(string project, string repoName, int pullrequestId)
+        {
+            project = project.Replace("(", "%28").Replace(")", "%29");
+            repoName = repoName.Replace("(", "%28").Replace(")", "%29");
+
+            string link = $"[pull request {pullrequestId}](https://tfs.dev.vitacore.ru/tfs/{project}/_git/{repoName}/pullrequest/{pullrequestId})";
+
+            return link;
         }
     }
 }
