@@ -1,4 +1,7 @@
-﻿using NotificationsBot.Interfaces;
+﻿using Microsoft.AspNet.WebHooks.Payloads;
+using Microsoft.VisualStudio.Services.Common;
+using Newtonsoft.Json;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.PullRequetUpdated;
 using NotificationsBot.Utils;
 using System.Text;
@@ -15,8 +18,10 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class PullRequestUpdateMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestUpdatedCustomPayload>
     {
-        public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
+        private readonly IHandlerFactory _createHandler;
+        public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IHandlerFactory createHandler) : base(context, botClient, userHolder, logger)
         {
+            _createHandler = createHandler;
         }
 
         public async Task Handle(PullRequestUpdatedCustomPayload resource)
@@ -35,33 +40,70 @@ namespace NotificationsBot.Handlers
             users.Add(resource.Resource.CreatedBy.UniqueName);
 
             Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
+            string initiator = string.Empty;
             if (match.Success)
             {
                 string remove = match.Groups[1].Value;
+                initiator = users.Where(x => x.Contains(remove)).FirstOrDefault() ?? match.Value;
+
                 users.RemoveWhere(x => x.Contains(remove));
             }
-            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.CreatedBy.DisplayName} update pull request"));
-            sb.Append("*Project*: ");
-            sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
-            sb.AppendLine();
-            sb.Append("*Title*: ");
-            sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
-            sb.AppendLine();
-            sb.Append("*Description*: ");
-            sb.AppendLine();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
+            Regex regex = new Regex(@"^.*?pull request");
 
-            sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+            Match matchText = regex.Match(resource.Message.Text);
+            if (matchText.Success)
+            {
+                string messageText = matchText.Value;
 
-            sb.AppendLine();
-            sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestUpdate"));
+                if (messageText.Contains("published the pull request"))
+                {
+                    await redirectToPullRequestCreate(resource, initiator);
+                    return;
+                }
 
-            _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
-            SendMessages(sb, chatIds);
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(FormatMarkdownToTelegram(messageText));
+                sb.Append("*Project*: ");
+                sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
+                sb.AppendLine();
+                sb.Append("*Title*: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
+                sb.AppendLine();
+                sb.Append("*Description*: ");
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
+
+                sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestUpdate"));
+
+                _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
+
+                SendMessages(sb, chatIds);
+            }
+        }
+
+        private async Task redirectToPullRequestCreate(PullRequestUpdatedCustomPayload payload, string initiator)
+        {
+            GitPullRequestCreatedPayload createPayload = new GitPullRequestCreatedPayload();
+
+            createPayload.Resource = new GitPullRequestResource();
+            createPayload.DetailedMessage = new PayloadMessage();
+            createPayload.Message = new PayloadMessage();
+
+            createPayload.Resource.Repository = payload.Resource.Repository;
+            createPayload.EventType = "git.pullrequest.created";
+            createPayload.DetailedMessage.Text = $"{initiator} create pull request";
+            createPayload.Message.Text = $"{initiator} create pull request";
+            createPayload.Resource.Reviewers.AddRange(payload.Resource.Reviewers);
+            createPayload.Resource.Title = payload.Resource.Title;
+            createPayload.Resource.Description = payload.Resource.Description;
+
+            await _createHandler.ProcessHandler(typeof(PullRequestCreateMessageHandler), JsonConvert.SerializeObject(createPayload));
         }
     }
 }

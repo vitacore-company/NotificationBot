@@ -29,27 +29,35 @@ namespace NotificationsBot.Handlers
                 users.RemoveWhere(x => x.Contains(remove));
             }
 
-            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
+            Regex regex = new Regex(@"^.*?pull request");
 
-            StringBuilder sb = new StringBuilder();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text.Substring(0, resource.Message.Text.LastIndexOf(resource.Resource.PullRequestId.ToString()))));
-            sb.Append("*Project*: ");
-            sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
-            sb.AppendLine();
-            sb.Append("*Title*: ");
-            sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
-            sb.AppendLine();
-            sb.Append("*Description*: ");
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
+            Match matchText = regex.Match(resource.Message.Text);
 
-            sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+            if (matchText.Success)
+            {
+                string messageText = matchText.Value;
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
-            sb.AppendLine();
-            sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestCreate"));
+                StringBuilder sb = new StringBuilder();
+                sb.AppendLine(FormatMarkdownToTelegram(messageText));
+                sb.Append("*Project*: ");
+                sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
+                sb.AppendLine();
+                sb.Append("*Title*: ");
+                sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
+                sb.AppendLine();
+                sb.Append("*Description*: ");
+                sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
 
-            _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} создан, сообщение отправлено {string.Join(',', chatIds)}");
+                sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
 
-            SendMessages(sb, chatIds);
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestCreate"));
+
+                _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} создан, сообщение отправлено {string.Join(',', chatIds)}");
+
+                SendMessages(sb, chatIds);
+            }
         }
     }
 }
