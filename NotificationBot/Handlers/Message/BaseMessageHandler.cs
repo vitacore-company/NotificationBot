@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Services.Common;
 using NotificationsBot.Interfaces;
+using NotificationsBot.Models.Database;
 using System.Text;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
@@ -88,14 +89,21 @@ public abstract class BaseMessageHandler
     /// <returns></returns>
     private async Task<Dictionary<long, int?>> filteredGroupChats(int? notificationTypeId, int? projectId)
     {
-        Dictionary<long, int?> groupChats = await _context.NotificationsOnProjectChat
-            .Include(x => x.Users)
-            .ThenInclude(x => x.Topics)
-            .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
-            .Where(x => x.Users.ChatId < 0 && x.Users.Topics.Count > 0)
-            .ToDictionaryAsync(x => x.Users.ChatId, x => (int?)x.Users.Topics.First().Id);
+        Topic? checkTopic = _context.Topics.FirstOrDefault(x => x.ProjectsId == projectId);
 
-        return groupChats;
+        if (checkTopic != null)
+        {
+            Dictionary<long, int?> groupChats = await _context.NotificationsOnProjectChat
+                .Include(x => x.Users)
+                .ThenInclude(x => x.Topics)
+                .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
+                .Where(x => x.Users.ChatId < 0 && x.Users.Topics.Count > 0)
+                .ToDictionaryAsync(x => x.Users.ChatId, x => (int?)x.Users.Topics.Where(x => x.Id == checkTopic.Id).Select(x => x.Id).First());
+
+            return groupChats;
+        }
+
+        return [];
     }
 
     /// <summary>
