@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.Release;
 using NotificationsBot.Utils;
 using System.Text;
@@ -37,15 +38,13 @@ namespace NotificationsBot.Handlers
 
                     StringBuilder sb = new StringBuilder();
 
-                    sb.AppendLine($"Deployment on stage {link} {resource.resource.deployment.deploymentStatus}");
+                    sb.AddMainInfo($"Deployment on stage {link} {resource.resource.deployment.deploymentStatus}");
                     sb.Append("*Release Definition*: ");
                     sb.Append(FormatMarkdownToTelegram(resource.resource.environment.releaseDefinition.name));
                     sb.AppendLine();
                     sb.Append("*Release Name*: ");
                     sb.Append(FormatMarkdownToTelegram(resource.resource.environment.release.name));
-                    sb.AppendLine();
-                    sb.Append("*Project*: ");
-                    sb.Append(FormatMarkdownToTelegram(resource.resource.project.name));
+                    sb.AddProject(FormatMarkdownToTelegram(resource.resource.project.name));
                     sb.AppendLine();
 
                     List<ReleaseDeployPhase> deployPhaseList = resource.resource.environment.deploySteps.Select(x => x.releaseDeployPhases).FirstOrDefault() ?? new List<ReleaseDeployPhase>();

@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.WebHooks.Payloads;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
+using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.PullRequetUpdated;
 using NotificationsBot.Utils;
@@ -63,19 +64,13 @@ namespace NotificationsBot.Handlers
                 Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine($"{FormatMarkdownToTelegram(matchText.Value)} {GetLinkFromMarkdown(resource.DetailedMessage.Markdown)}");
-                sb.Append("*Project*: ");
-                sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
-                sb.AppendLine();
-                sb.Append("*Title*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
-                sb.AppendLine();
-                sb.Append("*Description*: ");
-                sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
 
-                sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestUpdate"));
+                sb.AddMainInfo($"{FormatMarkdownToTelegram(matchText.Value)} {GetLinkFromMarkdown(resource.DetailedMessage.Markdown)}");
+                sb.AddProject(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
+                sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Title));
+
+                sb.AddDescription(FormatMarkdownToTelegram(resource.Resource.Description));
+                sb.AddTags(resource.Resource.Repository.Project.Name, "PullRequestUpdate");
 
                 _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
 
