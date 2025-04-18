@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNet.WebHooks.Payloads;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
+using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.PullRequetUpdated;
 using NotificationsBot.Utils;
@@ -44,42 +45,32 @@ namespace NotificationsBot.Handlers
             if (match.Success)
             {
                 string remove = match.Groups[1].Value;
-                initiator = users.Where(x => x.Contains(remove)).FirstOrDefault() ?? match.Value;
+                initiator = match.Value;
 
                 users.RemoveWhere(x => x.Contains(remove));
             }
 
-            Regex regex = new Regex(@"^.*?pull request");
+            if (resource.Message.Text.Contains("published the pull request"))
+            {
+                await redirectToPullRequestCreate(resource, initiator);
+                return;
+            }
 
+            Regex regex = new Regex(@"^.*?(?=\bpull request\b)");
             Match matchText = regex.Match(resource.Message.Text);
+
             if (matchText.Success)
             {
-                string messageText = matchText.Value;
-
-                if (messageText.Contains("published the pull request"))
-                {
-                    await redirectToPullRequestCreate(resource, initiator);
-                    return;
-                }
-
                 Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(FormatMarkdownToTelegram(messageText));
-                sb.Append("*Project*: ");
-                sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
-                sb.AppendLine();
-                sb.Append("*Title*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Title));
-                sb.AppendLine();
-                sb.Append("*Description*: ");
-                sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Description));
 
-                sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name, resource.Resource.PullRequestId, "pull request"));
+                sb.AddMainInfo($"{FormatMarkdownToTelegram(matchText.Value)} {GetLinkFromMarkdown(resource.DetailedMessage.Markdown)}");
+                sb.AddProject(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
+                sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Title));
 
-                sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Repository.Project.Name.Replace('.', '_').Replace("(agile)", "")} #PullRequestUpdate"));
+                sb.AddDescription(FormatMarkdownToTelegram(resource.Resource.Description));
+                sb.AddTags(resource.Resource.Repository.Project.Name, "PullRequestUpdate");
 
                 _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
 
@@ -95,10 +86,13 @@ namespace NotificationsBot.Handlers
             createPayload.DetailedMessage = new PayloadMessage();
             createPayload.Message = new PayloadMessage();
 
+            string markdownLink = Utilites.PullRequestLinkConfigure(payload.Resource.Repository.Project.Name, payload.Resource.Repository.Name, payload.Resource.PullRequestId, "pull request");
+
+            createPayload.Resource.CreatedBy = new GitUser() { DisplayName = initiator };
             createPayload.Resource.Repository = payload.Resource.Repository;
             createPayload.EventType = "git.pullrequest.created";
-            createPayload.DetailedMessage.Text = $"{initiator} create pull request";
-            createPayload.Message.Text = $"{initiator} create pull request";
+            createPayload.DetailedMessage.Markdown = $"{initiator} create {markdownLink}";
+            createPayload.DetailedMessage.Text = payload.DetailedMessage.Text;
             createPayload.Resource.Reviewers.AddRange(payload.Resource.Reviewers);
             createPayload.Resource.Title = payload.Resource.Title;
             createPayload.Resource.Description = payload.Resource.Description;

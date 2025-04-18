@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Utils;
 using System.Text;
@@ -30,13 +31,9 @@ namespace NotificationsBot.Handlers
             {
                 StringBuilder sb = new StringBuilder();
 
-                sb.Append($"Build {Utilites.BuildLinkConfigure(resource.Resource.BuildNumber, resource.Resource.Project.Name, resource.Resource.Id)} {resource.Resource.Result}");
-                sb.AppendLine();
-                sb.Append("*Project*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Project.Name));
-                sb.AppendLine();
-                sb.Append("*Definition*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Definition.Name));
+                sb.AddMainInfo($"Build {Utilites.BuildLinkConfigure(resource.Resource.BuildNumber, resource.Resource.Project.Name, resource.Resource.Id)} {resource.Resource.Result}");
+                sb.AddProject(FormatMarkdownToTelegram(resource.Resource.Project.Name));
+                sb.AddDefinition(FormatMarkdownToTelegram(resource.Resource.Definition.Name));
 
                 if (resource.Resource.Result.Equals("failed"))
                 {
@@ -48,8 +45,7 @@ namespace NotificationsBot.Handlers
                     }
                 }
 
-                sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Project.Name.Replace('.', '_').Replace("(agile)", "")} #Build"));
+                sb.AddTags(resource.Resource.Project.Name, "Build");
 
                 _logger.LogInformation($"Состояние сборки изменено, сообщение отправлено {string.Join(',', chatIds)}");
 

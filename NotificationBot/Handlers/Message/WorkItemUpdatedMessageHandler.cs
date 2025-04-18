@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -41,12 +42,10 @@ namespace NotificationsBot.Handlers
                 HashSet<string> users = new HashSet<string>();
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed"));
-                sb.Append("*Project*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTeamProject));
-                sb.AppendLine();
-                sb.Append("*Title*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTitle));
+                sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed"));
+                sb.AddProject(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTeamProject));
+                sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTitle));
+
                 sb.AppendLine();
                 sb.Append("*State*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemState));
@@ -81,8 +80,7 @@ namespace NotificationsBot.Handlers
 
                 sb.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
 
-                sb.AppendLine();
-                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Revision.Fields.SystemTeamProject.Replace('.', '_').Replace("(agile)", "")} #WorkItemUpdate"));
+                sb.AddTags(resource.Resource.Revision.Fields.SystemTeamProject, "WorkItemUpdate");
 
                 Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 

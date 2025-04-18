@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -37,12 +38,9 @@ namespace NotificationsBot.Handlers
                 Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
-                sb.Append("*Project*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTeamProject));
-                sb.AppendLine();
-                sb.Append("*Title*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTitle));
+                sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
+                sb.AddProject(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTeamProject));
+                sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTitle));
                 sb.AppendLine();
                 sb.Append("*State*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemState));
