@@ -44,11 +44,7 @@ namespace NotificationsBot.Handlers
             if (match.Success)
             {
                 string remove = match.Groups[1].Value;
-
-                if (users.Where(x => x.Contains(remove)).Count() > 0)
-                {
-                    initiator = users.Where(x => x.Contains(remove)).First();
-                }
+                initiator = users.Where(x => x.Contains(remove)).FirstOrDefault() ?? match.Value;
 
                 users.RemoveWhere(x => x.Contains(remove));
             }
@@ -62,7 +58,7 @@ namespace NotificationsBot.Handlers
 
                 if (messageText.Contains("published the pull request"))
                 {
-                    await redirectToPullRequestCreate(resource, match.Groups[1].Value);
+                    await redirectToPullRequestCreate(resource, initiator);
                     return;
                 }
 
