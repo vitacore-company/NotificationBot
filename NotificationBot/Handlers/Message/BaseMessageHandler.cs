@@ -90,7 +90,7 @@ public abstract class BaseMessageHandler
     /// <returns></returns>
     private async Task<Dictionary<long, int?>> filteredGroupChats(int? notificationTypeId, int? projectId)
     {
-        List<int> checkTopic = _context.Topics.Where(x => x.ProjectsId == projectId).Select(x => x.Id).ToList();
+        IQueryable<int> checkTopic = _context.Topics.Where(x => x.ProjectsId == projectId).Select(x => x.Id);
 
         if (checkTopic.Count() > 0)
         {
