@@ -31,6 +31,13 @@ namespace NotificationsBot.Handlers
             _logger = logger;
         }
 
+        /// <summary>
+        /// Получение отфильтрованных пользователей по проекту и типу нотификации
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <param name="project"></param>
+        /// <param name="users"></param>
+        /// <returns></returns>
         protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(string eventType, string project, List<long> users)
         {
             if (users.Count == 0)
