@@ -52,12 +52,12 @@ namespace NotificationsBot.Services
                     payload = JsonConvert.DeserializeObject(json, payloadType);
                     if (payload == null)
                     {
-                        throw new HandlerFactoryException($"Не удалось десереализовать объект с типом {handlerType.Name}");
+                        throw new HandlerFactoryException($"Не удалось десереализовать объект с типом {payloadType.Name}");
                     }
                 }
                 catch (JsonException ex)
                 {
-                    _logger.LogError(ex, $"Ошибка десереализации объекта с типом {handlerType.Name}");
+                    _logger.LogError(ex, $"Ошибка десереализации объекта с типом {payloadType.Name}");
                     throw;
                 }
 
@@ -68,7 +68,7 @@ namespace NotificationsBot.Services
 
                     if (handleMethod == null)
                     {
-                        throw new HandlerFactoryException("Не удалось получить обработчик!");
+                        throw new HandlerFactoryException($"Не удалось получить обработчик с именем {handlerType.Name}!");
                     }
 
                     _handleMethodCache.TryAdd(handlerType, handleMethod);
