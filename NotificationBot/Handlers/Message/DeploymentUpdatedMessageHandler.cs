@@ -44,6 +44,7 @@ namespace NotificationsBot.Handlers
                     sb.AppendLine();
                     sb.Append("*Release Name*: ");
                     sb.Append(FormatMarkdownToTelegram(resource.resource.environment.release.name));
+                    sb.AppendLine();
                     sb.AddProject(FormatMarkdownToTelegram(resource.resource.project.name));
                     sb.AppendLine();
 
