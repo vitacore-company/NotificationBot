@@ -90,16 +90,21 @@ public abstract class BaseMessageHandler
     /// <returns></returns>
     private async Task<Dictionary<long, int?>> filteredGroupChats(int? notificationTypeId, int? projectId)
     {
-        Topic? checkTopic = _context.Topics.FirstOrDefault(x => x.ProjectsId == projectId);
+        List<int> checkTopic = _context.Topics.Where(x => x.ProjectsId == projectId).Select(x => x.Id).ToList();
 
-        if (checkTopic != null)
+        if (checkTopic.Count() > 0)
         {
             Dictionary<long, int?> groupChats = await _context.NotificationsOnProjectChat
                 .Include(x => x.Users)
                 .ThenInclude(x => x.Topics)
                 .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
                 .Where(x => x.Users.ChatId < 0 && x.Users.Topics.Count > 0)
-                .ToDictionaryAsync(x => x.Users.ChatId, x => (int?)x.Users.Topics.Where(x => x.Id == checkTopic.Id).Select(x => x.Id).First());
+                .Select(x => new
+                {
+                    ChatId = x.Users.ChatId,
+                    TopicId = x.Users.Topics.Select(t => t.Id).FirstOrDefault(id => checkTopic.Contains(id)) // Находим пересечение топиков пользователя с топиками проекта
+                })
+            .ToDictionaryAsync(x => x.ChatId, x => (int?)x.TopicId);
 
             return groupChats;
         }
