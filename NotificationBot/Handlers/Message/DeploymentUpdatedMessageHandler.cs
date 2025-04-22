@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Extensions;
+﻿using Microsoft.Extensions.Caching.Memory;
+using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.Release;
 using NotificationsBot.Utils;
@@ -9,7 +10,7 @@ namespace NotificationsBot.Handlers
 {
     public class DeploymentUpdatedMessageHandler : BaseMessageHandler, IMessageHandler<Root>
     {
-        public DeploymentUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
+        public DeploymentUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache) : base(context, botClient, userHolder, logger, memoryCache)
         {
         }
 

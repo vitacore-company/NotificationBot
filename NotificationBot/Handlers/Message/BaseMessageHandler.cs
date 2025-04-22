@@ -1,10 +1,9 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.Services.Common;
 using NotificationsBot.Interfaces;
-using System.Collections.Concurrent;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Transactions;
 using Telegram.Bot;
 using Telegram.Bot.Extensions;
 
@@ -20,15 +19,16 @@ namespace NotificationsBot.Handlers
         /// <summary>
         /// Кеширование типа нотификации и проекта
         /// </summary>
-        public static readonly ConcurrentDictionary<(string, string), (int?, int?)> _filterCache = new();
+        private readonly IMemoryCache _memoryCache;
 
         protected BaseMessageHandler(AppContext context, ITelegramBotClient botClient,
-            IUserHolder userHolder, ILogger<BaseMessageHandler> logger)
+            IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache)
         {
             _context = context;
             _botClient = botClient;
             _userHolder = userHolder;
             _logger = logger;
+            _memoryCache = memoryCache;
         }
 
         /// <summary>
@@ -46,10 +46,10 @@ namespace NotificationsBot.Handlers
             }
 
             // Получение или кеширование типа нотификации и проекта
-            if (!_filterCache.TryGetValue((eventType, project), out (int?, int?) ids))
+            if (!_memoryCache.TryGetValue((eventType, project), out (int?, int?) ids))
             {
                 ids = await getNotificationAndProjectIds(eventType, project);
-                _filterCache.TryAdd((eventType, project), ids);
+                _memoryCache.Set((eventType, project), ids);
             }
 
             (int? notificationTypeId, int? projectId) = ids;

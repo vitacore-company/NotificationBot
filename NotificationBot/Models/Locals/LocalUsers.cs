@@ -1,12 +1,5 @@
-﻿using System.Collections.Concurrent;
-
-namespace NotificationsBot.Models.Locals
+﻿namespace NotificationsBot.Models.Locals
 {
-    public static class LocalUsers
-    {
-        public static ConcurrentDictionary<string, UserInfo> Users = new ConcurrentDictionary<string, UserInfo>();
-    }
-
     public struct UserInfo
     {
         public UserInfo(long chatId, bool available)

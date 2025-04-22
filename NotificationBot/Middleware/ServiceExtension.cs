@@ -41,6 +41,7 @@ public static class ServiceExtension
         services.AddMessageHandlers(Assembly.GetExecutingAssembly());
         services.AddScoped<IHandlerFactory, HandlerFactory>();
         services.AddTransient<ExceptionMiddleware>();
+        services.AddMemoryCache();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
