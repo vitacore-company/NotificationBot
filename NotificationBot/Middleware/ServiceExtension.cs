@@ -3,7 +3,6 @@ using Microsoft.Extensions.Options;
 using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Services;
-using NotificationsBot.Services.Background;
 using NotificationsBot.Services.Background.Polling;
 using System.Reflection;
 using Telegram.Bot;
@@ -35,7 +34,6 @@ public static class ServiceExtension
         services.AddScoped<IExistUserChecker, ExistUserChecker>();
         services.AddScoped<IUserHolder, UserHolderService>();
         services.AddScoped<INotificationTypesService, NotificationTypesService>();
-        services.AddHostedService<BackgroundUserService>();
         services.AddHostedService<PollingService>();
         services.RegisterHandler();
         services.AddMessageHandlers(Assembly.GetExecutingAssembly());
