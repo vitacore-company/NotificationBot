@@ -1,6 +1,6 @@
-﻿using Newtonsoft.Json;
+﻿using Microsoft.Extensions.Caching.Memory;
+using Newtonsoft.Json;
 using NotificationsBot.Interfaces;
-using System.Collections.Concurrent;
 using System.Reflection;
 
 namespace NotificationsBot.Services
@@ -9,12 +9,13 @@ namespace NotificationsBot.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<HandlerFactory> _logger;
-        public static readonly ConcurrentDictionary<Type, MethodInfo> _handleMethodCache = new();
+        private readonly IMemoryCache _memoryCache;
 
-        public HandlerFactory(IServiceProvider serviceProvider, ILogger<HandlerFactory> logger)
+        public HandlerFactory(IServiceProvider serviceProvider, ILogger<HandlerFactory> logger, IMemoryCache memoryCache)
         {
             _serviceProvider = serviceProvider;
             _logger = logger;
+            _memoryCache = memoryCache;
 
         }
 
@@ -62,7 +63,7 @@ namespace NotificationsBot.Services
                 }
 
                 // Получение из кеша или кеширование обработчика
-                if (!_handleMethodCache.TryGetValue(handlerType, out MethodInfo? handleMethod))
+                if (!_memoryCache.TryGetValue(handlerType, out MethodInfo? handleMethod))
                 {
                     handleMethod = handlerType.GetMethod(nameof(IMessageHandler<object>.Handle));
 
@@ -71,13 +72,13 @@ namespace NotificationsBot.Services
                         throw new HandlerFactoryException($"Не удалось получить обработчик с именем {handlerType.Name}!");
                     }
 
-                    _handleMethodCache.TryAdd(handlerType, handleMethod);
+                    _memoryCache.Set(handlerType, handleMethod);
                 }
 
                 // Вызов обработчика
                 try
                 {
-                    Task? task = (Task?)handleMethod.Invoke(handler, new[] { payload });
+                    Task? task = (Task?)handleMethod?.Invoke(handler, new[] { payload });
                     if (task != null)
                     {
                         await task.ConfigureAwait(false);
