@@ -1,5 +1,7 @@
 ﻿using Newtonsoft.Json;
 using NotificationsBot.Interfaces;
+using System.Collections.Concurrent;
+using System.Reflection;
 
 namespace NotificationsBot.Services
 {
@@ -7,6 +9,7 @@ namespace NotificationsBot.Services
     {
         private readonly IServiceProvider _serviceProvider;
         private readonly ILogger<HandlerFactory> _logger;
+        public static readonly ConcurrentDictionary<Type, MethodInfo> _handleMethodCache = new();
 
         public HandlerFactory(IServiceProvider serviceProvider, ILogger<HandlerFactory> logger)
         {
@@ -30,37 +33,64 @@ namespace NotificationsBot.Services
                     throw new InvalidOperationException($"Обработчик с типом {handlerType.Name} не зарегестрирован.");
                 }
 
-                // Получаем все интерфейсы, реализованные хендлером
-                Type[] interfaces = handlerType.GetInterfaces();
+                // Получение интерфейса IMessageHandler<T>
+                Type? messageHandlerInterface = handlerType.GetInterfaces()
+                    .FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IMessageHandler<>));
 
-                // Находим первый дженерик интерфейс
-                Type? genericInterface = interfaces.FirstOrDefault(i => i.IsGenericType);
-
-                if (genericInterface != null)
+                if (messageHandlerInterface == null)
                 {
-                    // Получаем тип из GenericTypeArguments
-                    Type payloadType = genericInterface.GenericTypeArguments[0];
+                    throw new InvalidOperationException($"Обработчик {handlerType.Name} не является наследником IMessageHandler<T>");
+                }
 
-                    // Десериализуем объект в тип payloadType
-                    object? deserializedObject = JsonConvert.DeserializeObject(json, payloadType);
+                // Получение типа дженерика
+                Type payloadType = messageHandlerInterface.GenericTypeArguments[0];
 
-                    if (deserializedObject != null)
+                // Попытка десериализовать в нужный тип из дженерика
+                object? payload;
+                try
+                {
+                    payload = JsonConvert.DeserializeObject(json, payloadType);
+                    if (payload == null)
                     {
-                        // Вызываем метод Handle с правильным типом
-                        System.Reflection.MethodInfo? handleMethod = handler.GetType().GetMethod(nameof(IMessageHandler<object>.Handle));
-                        if (handleMethod != null)
-                        {
-                            object? taskObject = handleMethod.Invoke(handler, new[] { deserializedObject });
-                            if (taskObject != null && taskObject is Task task)
-                            {
-                                await task;
-                            }
-                            else
-                            {
-                                throw new HandlerFactoryException();
-                            }
-                        }
+                        throw new HandlerFactoryException($"Не удалось десереализовать объект с типом {payloadType.Name}");
                     }
+                }
+                catch (JsonException ex)
+                {
+                    _logger.LogError(ex, $"Ошибка десереализации объекта с типом {payloadType.Name}");
+                    throw;
+                }
+
+                // Получение из кеша или кеширование обработчика
+                if (!_handleMethodCache.TryGetValue(handlerType, out MethodInfo? handleMethod))
+                {
+                    handleMethod = handlerType.GetMethod(nameof(IMessageHandler<object>.Handle));
+
+                    if (handleMethod == null)
+                    {
+                        throw new HandlerFactoryException($"Не удалось получить обработчик с именем {handlerType.Name}!");
+                    }
+
+                    _handleMethodCache.TryAdd(handlerType, handleMethod);
+                }
+
+                // Вызов обработчика
+                try
+                {
+                    Task? task = (Task?)handleMethod.Invoke(handler, new[] { payload });
+                    if (task != null)
+                    {
+                        await task.ConfigureAwait(false);
+                    }
+                    else
+                    {
+                        throw new HandlerFactoryException();
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, $"Ошибка во время выполнения обработчика {handlerType.Name}");
+                    throw;
                 }
             }
         }
@@ -68,6 +98,8 @@ namespace NotificationsBot.Services
 
     public class HandlerFactoryException : Exception
     {
-
+        public HandlerFactoryException() { }
+        public HandlerFactoryException(string message) : base(message) { }
+        public HandlerFactoryException(string message, Exception inner) : base(message, inner) { }
     }
 }
