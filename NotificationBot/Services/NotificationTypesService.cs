@@ -34,7 +34,14 @@ namespace NotificationsBot.Services
 
         public List<string> GetProjects()
         {
-            return _context.Projects.Select(x => x.Name).ToList();
+            if (!_memoryCache.TryGetValue(nameof(Projects), out List<string>? projects))
+            {
+                projects = _context.Projects.Select(x => x.Name).ToList();
+
+                _memoryCache.Set(nameof(Projects), projects, new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15) });
+            }
+
+            return projects ?? new List<string>();
         }
 
         /// <summary>
