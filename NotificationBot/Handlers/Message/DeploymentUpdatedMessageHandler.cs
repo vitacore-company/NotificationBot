@@ -22,7 +22,7 @@ namespace NotificationsBot.Handlers
 
             if (notificationType > 0)
             {
-                List<string> users = _context.NotificationsOnProjectChat.Where(x => x.NotificationTypesId == notificationType).Select(x => x.Users.Login).ToList();
+                List<string> users = _context.NotificationsOnProjectChat.Where(x => x.NotificationTypesId == notificationType).Select(x => x.Users.Login ?? string.Empty).ToList();
 
                 if (users.Count > 0)
                 {
