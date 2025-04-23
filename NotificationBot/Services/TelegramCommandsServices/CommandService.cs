@@ -88,7 +88,7 @@ namespace NotificationsBot.Services
                     await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From?.Id ?? -1);
                     await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
 
-                    var inlineKeyboard = new InlineKeyboardMarkup(
+                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
                         new List<InlineKeyboardButton[]>()
                         {
                         new InlineKeyboardButton[]

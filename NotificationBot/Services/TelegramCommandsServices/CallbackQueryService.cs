@@ -90,7 +90,7 @@ namespace NotificationsBot.Services
         {
             List<string> projects = _notificationTypesService.GetProjects();
 
-            var inlineKeyboard = new InlineKeyboardMarkup();
+            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
             for (int i = 0; i < projects.Count; i++)
             {
                 if (i % 3 == 0)
@@ -137,7 +137,7 @@ namespace NotificationsBot.Services
         {
             List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, callbackQuery.Data ?? "");
 
-            var inlineKeyboard = new InlineKeyboardMarkup();
+            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
             foreach (string _type in types)
             {
                 inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
@@ -171,7 +171,7 @@ namespace NotificationsBot.Services
 
                     List<string> newNotifys = await _notificationTypesService.SetOrDeleteChatProjectNotification(project, chatId, command);
 
-                    var inlineKeyboard = new InlineKeyboardMarkup();
+                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
                     foreach (string _type in newNotifys)
                     {
                         inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
