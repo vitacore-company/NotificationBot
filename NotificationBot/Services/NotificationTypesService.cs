@@ -110,7 +110,7 @@ namespace NotificationsBot.Services
 
         private Projects? tryGetProjectFromCacheOrArr(string projectName)
         {
-            if (_memoryCache.TryGetValue(projectName, out Projects? project))
+            if (!_memoryCache.TryGetValue(projectName, out Projects? project))
             {
                 project = _context.Projects.Where(x => x.Name == projectName).Include(x => x.NotificationTypes).FirstOrDefault();
 
@@ -122,7 +122,7 @@ namespace NotificationsBot.Services
 
         private NotificationTypes? tryGetNotificationTypesFromCacheOrArr(string notificationType)
         {
-            if (_memoryCache.TryGetValue(notificationType, out NotificationTypes? type))
+            if (!_memoryCache.TryGetValue(notificationType, out NotificationTypes? type))
             {
                 type = _context.NotificationTypes.Where(x => x.EventDescription == notificationType).FirstOrDefault();
 
