@@ -16,7 +16,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class PullRequestCommentMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestCommentedPayload>
     {
-        public PullRequestCommentMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache) : base(context, botClient, userHolder, logger, memoryCache)
+        public PullRequestCommentMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
         {
         }
 

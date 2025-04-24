@@ -88,7 +88,7 @@ namespace NotificationsBot.Services
         /// <returns></returns>
         private async Task HandleNotificationSettings(Message message)
         {
-            List<string> projects = _notificationTypesService.GetProjects();
+            List<string> projects = await _notificationTypesService.GetProjects();
 
             InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
             for (int i = 0; i < projects.Count; i++)
@@ -116,7 +116,7 @@ namespace NotificationsBot.Services
         /// <returns></returns>
         private async Task HandleProjectOrNotificationSelection(CallbackQuery callbackQuery, Message message, int? topic)
         {
-            if (await _notificationTypesService.GetProjectByName(callbackQuery.Data ?? ""))
+            if (await _notificationTypesService.IsProjectExistByName(callbackQuery.Data ?? ""))
             {
                 await HandleProjectSelection(callbackQuery, message, topic);
             }
