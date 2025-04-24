@@ -11,6 +11,6 @@ namespace NotificationsBot.Interfaces
         Task<NotificationTypes?> GetOrCacheNotificationType(string notificationType);
         Task<Projects?> GetOrCacheProject(string project);
         void RemoveEventCache(string eventType, string project);
-        CancellationToken GetOrCreateResetToken(string eventType, string project);
+        CancellationToken GetOrCreateResetToken(string key);
     }
 }
