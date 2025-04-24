@@ -1,8 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Primitives;
 using Microsoft.VisualStudio.Services.Common;
 using NotificationsBot.Interfaces;
+using NotificationsBot.Models.Database;
 using System.Text;
 using System.Text.RegularExpressions;
 using Telegram.Bot;
@@ -18,24 +17,18 @@ namespace NotificationsBot.Handlers
         protected readonly ILogger<BaseMessageHandler> _logger;
 
         /// <summary>
-        /// Кеширование типа нотификации и проекта
+        /// Сервис кеширования данных
         /// </summary>
-        private readonly IMemoryCache _memoryCache;
-
-        /// <summary>
-        /// Сервис кеширования отфильтрованных данных пользователей
-        /// </summary>
-        private readonly INotificationCacheService _notificationCache;
+        private readonly ICacheService _cacheService;
 
         protected BaseMessageHandler(AppContext context, ITelegramBotClient botClient,
-            IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache)
+            IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService)
         {
             _context = context;
             _botClient = botClient;
             _userHolder = userHolder;
             _logger = logger;
-            _memoryCache = memoryCache;
-            _notificationCache = notificationCache;
+            _cacheService = cacheService;
         }
 
         /// <summary>
@@ -54,58 +47,38 @@ namespace NotificationsBot.Handlers
 
             string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}_{identity}";
 
-            Dictionary<long, int?>? filteredUsers = await _memoryCache.GetOrCreateAsync<Dictionary<long, int?>>(cacheKey, async entry =>
-                {
-                    entry.AddExpirationToken(new CancellationChangeToken(_notificationCache.GetOrCreateResetToken(cacheKey)));
-                    entry.AddExpirationToken(getEventToken(cacheKey));
-                    entry.SetAbsoluteExpiration(TimeSpan.FromHours(3));
+            string dependencyKey = $"{eventType}_{project}";
 
-                    // Получение или кеширование типа нотификации и проекта
-                    if (!_memoryCache.TryGetValue((eventType, project), out (int?, int?) ids))
-                    {
-                        ids = await getNotificationAndProjectIds(eventType, project);
-                        _memoryCache.Set((eventType, project), ids);
-                    }
+            Dictionary<long, int?> filetedUsers = await _cacheService.GetOrCreateAsync(cacheKey, async () =>
+                await getFilteredUsersInternal(eventType, project, users), new List<string>() { dependencyKey });
 
-                    (int? notificationTypeId, int? projectId) = ids;
+            return filetedUsers;
+        }
 
-                    if (notificationTypeId <= 0 || projectId <= 0)
-                    {
-                        return [];
-                    }
+        /// <summary>
+        /// Внутренний метод кеширования, фильтрации и возврата нужных пользователей
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <param name="project"></param>
+        /// <param name="users"></param>
+        /// <returns></returns>
+        private async Task<Dictionary<long, int?>> getFilteredUsersInternal(string eventType, string project, List<long> users)
+        {
+            (int? notificationTypeId, int? projectId) = await getNotificationAndProjectIds(eventType, project);
 
-                    Dictionary<long, int?> filtered = await getFilteredUsersAndGroups(notificationTypeId.GetValueOrDefault(), projectId.GetValueOrDefault(), users);
-
-                    return filtered;
-                });
-
-            if (filteredUsers == null || filteredUsers.Count == 0)
+            if (notificationTypeId <= 0 || projectId <= 0)
             {
                 return [];
             }
 
+            Dictionary<long, int?> filteredUsers = await getFilteredUsersAndGroups(
+                notificationTypeId.GetValueOrDefault(),
+                projectId.GetValueOrDefault(),
+                users);
+
             _logger.LogInformation($"Получение пользователей для эвента {eventType}, проект {project}: {string.Join(',', filteredUsers)}");
 
             return filteredUsers;
-        }
-
-        /// <summary>
-        /// Получение токена для кеширования пользователей по проекту и эвенту
-        /// </summary>
-        /// <param name="eventType"></param>
-        /// <param name="project"></param>
-        /// <returns></returns>
-        private IChangeToken getEventToken(string tokenKey)
-        {
-            CancellationTokenSource ct = new CancellationTokenSource();
-
-            IChangeToken? token = _memoryCache.GetOrCreate(tokenKey, entry =>
-            {
-                entry.SetAbsoluteExpiration(TimeSpan.FromHours(3));
-                return new CancellationChangeToken(ct.Token);
-            });
-
-            return token ?? new CancellationChangeToken(ct.Token);
         }
 
         /// <summary>
@@ -115,6 +88,16 @@ namespace NotificationsBot.Handlers
         /// <param name="project"></param>
         /// <returns></returns>
         private async Task<(int?, int?)> getNotificationAndProjectIds(string eventType, string project)
+        {
+            string cacheKey = $"ids_{eventType}_{project}";
+
+            (int?, int?) ids = await _cacheService.GetOrCreateAsync(cacheKey, async () =>
+                await getNotificationTypeAndProject(eventType, project));
+
+            return ids;
+        }
+
+        private async Task<(int?, int?)> getNotificationTypeAndProject(string eventType, string project)
         {
             int? notificationTypeId = await _context.NotificationTypes
                 .Where(x => x.EventType == eventType)
@@ -147,6 +130,8 @@ namespace NotificationsBot.Handlers
                 await _context.Projects.AddAsync(new Models.Database.Projects() { Name = project, NotificationTypes = notificationTypes });
 
                 await _context.SaveChangesAsync();
+
+                _cacheService.InvalidateByKey(nameof(Projects));
             }
 
             return true;

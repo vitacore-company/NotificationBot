@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using NotificationsBot.Extensions;
+﻿using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.Release;
 using NotificationsBot.Utils;
@@ -10,7 +9,7 @@ namespace NotificationsBot.Handlers
 {
     public class DeploymentUpdatedMessageHandler : BaseMessageHandler, IMessageHandler<Root>
     {
-        public DeploymentUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
+        public DeploymentUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
@@ -51,7 +50,7 @@ namespace NotificationsBot.Handlers
                     sb.AppendLine();
 
                     List<ReleaseDeployPhase> deployPhaseList = resource.resource.environment.deploySteps.Select(x => x.releaseDeployPhases).FirstOrDefault() ?? new List<ReleaseDeployPhase>();
-                    
+
                     foreach (ReleaseDeployPhase item in deployPhaseList)
                     {
                         foreach (DeploymentJob deployItem in item.deploymentJobs)

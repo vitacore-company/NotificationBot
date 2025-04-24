@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNet.WebHooks.Payloads;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.VisualStudio.Services.Common;
 using Newtonsoft.Json;
 using NotificationsBot.Extensions;
@@ -22,7 +21,7 @@ namespace NotificationsBot.Handlers
     {
         private readonly IHandlerFactory _createHandler;
 
-        public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache, IHandlerFactory createHandler) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
+        public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService, IHandlerFactory createHandler) : base(context, botClient, userHolder, logger, cacheService)
         {
             _createHandler = createHandler;
         }

@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using NotificationsBot.Extensions;
+﻿using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Utils;
@@ -16,7 +15,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class PullRequestCommentMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestCommentedPayload>
     {
-        public PullRequestCommentMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
+        public PullRequestCommentMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
@@ -27,7 +26,7 @@ namespace NotificationsBot.Handlers
 
             string author = resource.Resource.comment.author.uniqueName;
 
-            users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
+            //users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
             Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                 resource.EventType,
                 resource.Resource.pullRequest.Repository.Project.Name,
