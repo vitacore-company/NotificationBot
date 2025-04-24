@@ -83,7 +83,7 @@ namespace NotificationsBot.Handlers
 
                 sb.AddTags(resource.Resource.Revision.Fields.SystemTeamProject, "WorkItemUpdate");
 
-                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()), matchItemId.Value);
 
                 _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
 

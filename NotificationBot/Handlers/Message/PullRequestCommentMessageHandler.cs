@@ -31,7 +31,7 @@ namespace NotificationsBot.Handlers
             Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                 resource.EventType,
                 resource.Resource.pullRequest.Repository.Project.Name,
-                await _userHolder.GetChatIdsByLogin(users.ToList()));
+                await _userHolder.GetChatIdsByLogin(users.ToList()), resource.Resource.pullRequest.PullRequestId.ToString());
 
             StringBuilder sb = new StringBuilder();
 

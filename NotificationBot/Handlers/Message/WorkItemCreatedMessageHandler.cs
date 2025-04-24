@@ -36,7 +36,7 @@ namespace NotificationsBot.Handlers
                 HashSet<string> users = new HashSet<string>();
                 users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
 
-                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()), itemId);
 
                 StringBuilder sb = new StringBuilder();
                 sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));

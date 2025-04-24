@@ -29,7 +29,8 @@ namespace NotificationsBot.Handlers
                     Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                         eventType,
                         resource.resource.project.name,
-                        await _userHolder.GetChatIdsByLogin(users));
+                        await _userHolder.GetChatIdsByLogin(users),
+                        resource.resource.environment.releaseId.ToString());
 
                     string link = Utilites.DeploymentLinkConfigure(
                         resource.resource.project.name,
