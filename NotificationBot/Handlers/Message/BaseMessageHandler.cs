@@ -52,12 +52,12 @@ namespace NotificationsBot.Handlers
                 return [];
             }
 
-            string cacheKey = $"filtered_users_{eventType}_{project}";
+            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}";
 
             Dictionary<long, int?>? filteredUsers = await _memoryCache.GetOrCreateAsync<Dictionary<long, int?>>(cacheKey, async entry =>
                 {
-                    entry.AddExpirationToken(new CancellationChangeToken(_notificationCache.GetOrCreateResetToken(eventType, project)));
-                    entry.AddExpirationToken(getEventToken(eventType, project));
+                    entry.AddExpirationToken(new CancellationChangeToken(_notificationCache.GetOrCreateResetToken(cacheKey)));
+                    entry.AddExpirationToken(getEventToken(cacheKey));
                     entry.SetAbsoluteExpiration(TimeSpan.FromHours(3));
 
                     // Получение или кеширование типа нотификации и проекта
@@ -95,9 +95,8 @@ namespace NotificationsBot.Handlers
         /// <param name="eventType"></param>
         /// <param name="project"></param>
         /// <returns></returns>
-        private IChangeToken getEventToken(string eventType, string project)
+        private IChangeToken getEventToken(string tokenKey)
         {
-            string tokenKey = $"{eventType}_{project}";
             CancellationTokenSource ct = new CancellationTokenSource();
 
             IChangeToken? token = _memoryCache.GetOrCreate(tokenKey, entry =>

@@ -151,10 +151,13 @@ namespace NotificationsBot.Services
         {
             string key = $"{eventType}_{project}";
 
-            if (_eventTokens.TryRemove(key, out CancellationTokenSource? oldCt))
+            foreach (KeyValuePair<string, CancellationTokenSource> eventCache in _eventTokens.Where(x => x.Key.Contains(key)))
             {
-                oldCt.Cancel();
-                oldCt.Dispose();
+                if (_eventTokens.TryRemove(eventCache.Key, out CancellationTokenSource? oldCt))
+                {
+                    oldCt.Cancel();
+                    oldCt.Dispose();
+                }
             }
         }
 
@@ -162,10 +165,8 @@ namespace NotificationsBot.Services
         /// Установка или получение токена сброса отфильтрованных пользователей
         /// </summary>
         /// <returns></returns>
-        public CancellationToken GetOrCreateResetToken(string eventType, string project)
+        public CancellationToken GetOrCreateResetToken(string key)
         {
-            string key = $"{eventType}_{project}";
-
             if (!_eventTokens.TryGetValue(key, out CancellationTokenSource? source))
             {
                 source = _cts;
