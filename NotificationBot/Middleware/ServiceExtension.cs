@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Options;
 using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
+using NotificationsBot.Interfaces.TelegramCallback;
 using NotificationsBot.Services;
 using NotificationsBot.Services.Background.Polling;
 using System.Reflection;
@@ -40,6 +41,8 @@ public static class ServiceExtension
         services.AddScoped<IHandlerFactory, HandlerFactory>();
         services.AddTransient<ExceptionMiddleware>();
         services.AddMemoryCache();
+        services.AddScoped<ICommandService, CommandService>();
+        services.AddScoped<ICallbackQueryService, CallbackQueryService>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>

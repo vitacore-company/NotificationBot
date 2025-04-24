@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.Database;
 using System.Diagnostics.CodeAnalysis;
@@ -8,8 +9,11 @@ namespace NotificationsBot.Services
     public class NotificationTypesService : INotificationTypesService
     {
         private readonly AppContext _context;
-        public NotificationTypesService(AppContext context)
+        private readonly IMemoryCache _memoryCache;
+
+        public NotificationTypesService(AppContext context, IMemoryCache memoryCache)
         {
+            _memoryCache = memoryCache;
             _context = context;
         }
 
@@ -17,7 +21,7 @@ namespace NotificationsBot.Services
         {
             if (chatId != -1 && !string.IsNullOrEmpty(project))
             {
-                Projects? _project = await _context.Projects.Where(x => x.Name == project).Include(x => x.NotificationTypes).FirstOrDefaultAsync();
+                Projects? _project = tryGetProjectFromCacheOrArr(project);
 
                 if (_project != null)
                 {
@@ -30,7 +34,14 @@ namespace NotificationsBot.Services
 
         public List<string> GetProjects()
         {
-            return _context.Projects.Select(x => x.Name).ToList();
+            if (!_memoryCache.TryGetValue(nameof(Projects), out List<string>? projects))
+            {
+                projects = _context.Projects.Select(x => x.Name).ToList();
+
+                _memoryCache.Set(nameof(Projects), projects, new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(15) });
+            }
+
+            return projects ?? new List<string>();
         }
 
         /// <summary>
@@ -40,14 +51,14 @@ namespace NotificationsBot.Services
         /// <param name="chatId"></param>
         /// <param name="notificationType"></param>
         /// <returns></returns>
-        public async Task<List<string>> SetOrDeleteChatProjectNotification([AllowNull]string project, long chatId, [AllowNull]string notificationType)
+        public async Task<List<string>> SetOrDeleteChatProjectNotification([AllowNull] string project, long chatId, [AllowNull] string notificationType)
         {
             if (string.IsNullOrEmpty(project) || string.IsNullOrEmpty(notificationType))
             {
                 return [];
             }
-            Projects? _project = await _context.Projects.Where(x => x.Name == project).Include(x => x.NotificationTypes).FirstOrDefaultAsync();
-            NotificationTypes? type = await _context.NotificationTypes.Where(x => x.EventDescription == notificationType).FirstOrDefaultAsync();
+            Projects? _project = tryGetProjectFromCacheOrArr(project);
+            NotificationTypes? type = tryGetNotificationTypesFromCacheOrArr(notificationType);
 
             if (type != null && _project != null)
             {
@@ -72,7 +83,7 @@ namespace NotificationsBot.Services
             return [];
         }
 
-        public Task<bool> GetProjectByName([MaybeNullWhen(false)]string projectName)
+        public Task<bool> GetProjectByName([MaybeNullWhen(false)] string projectName)
         {
             if (string.IsNullOrEmpty(projectName))
             {
@@ -102,6 +113,30 @@ namespace NotificationsBot.Services
             }
 
             return userNotifys;
+        }
+
+        private Projects? tryGetProjectFromCacheOrArr(string projectName)
+        {
+            if (!_memoryCache.TryGetValue(projectName, out Projects? project))
+            {
+                project = _context.Projects.Where(x => x.Name == projectName).Include(x => x.NotificationTypes).FirstOrDefault();
+
+                _memoryCache.Set(projectName, project);
+            }
+
+            return project;
+        }
+
+        private NotificationTypes? tryGetNotificationTypesFromCacheOrArr(string notificationType)
+        {
+            if (!_memoryCache.TryGetValue(notificationType, out NotificationTypes? type))
+            {
+                type = _context.NotificationTypes.Where(x => x.EventDescription == notificationType).FirstOrDefault();
+
+                _memoryCache.Set(notificationType, type);
+            }
+
+            return type;
         }
     }
 }

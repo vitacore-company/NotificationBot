@@ -1,12 +1,8 @@
-﻿using NotificationsBot.Interfaces;
-using System.Text;
-using System.Text.RegularExpressions;
+﻿using NotificationsBot.Interfaces.TelegramCallback;
 using Telegram.Bot;
-using Telegram.Bot.Extensions;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
 using Telegram.Bot.Types.Enums;
-using Telegram.Bot.Types.ReplyMarkups;
 
 namespace NotificationsBot.Handlers;
 
@@ -18,21 +14,19 @@ namespace NotificationsBot.Handlers;
 public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
 {
     private readonly ITelegramBotClient _botClient;
-    private readonly IUsersDataService _usersDataService;
-    private readonly IExistUserChecker _userChecker;
-    private readonly INotificationTypesService _notificationTypesService;
+    private readonly ICommandService _commandService;
+    private readonly ICallbackQueryService _callbackQueryService;
     private readonly ILogger<TelegramCommandHandler> _logger;
 
-    public TelegramCommandHandler(ITelegramBotClient botClient,
-        IUsersDataService usersDataService,
-        IExistUserChecker userChecker,
-        INotificationTypesService notificationTypesService,
+    public TelegramCommandHandler(
+        ITelegramBotClient botClient,
+        ICommandService commandService,
+        ICallbackQueryService callbackQueryService,
         ILogger<TelegramCommandHandler> logger)
     {
         _botClient = botClient;
-        _usersDataService = usersDataService;
-        _userChecker = userChecker;
-        _notificationTypesService = notificationTypesService;
+        _commandService = commandService;
+        _callbackQueryService = callbackQueryService;
         _logger = logger;
     }
 
@@ -54,286 +48,22 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     /// <param name="type">Тип обновления в чате.</param>
     public async Task HandleOnUpdate(Message? msg, UpdateType type, Update update)
     {
-        switch (type)
-        {
-            case UpdateType.Unknown:
-                break;
-            case UpdateType.Message:
-                if (msg != null)
-                {
-                    await HandleOnMessage(msg);
-                }
-                break;
-            case UpdateType.InlineQuery:
-                break;
-            case UpdateType.ChosenInlineResult:
-                break;
-            case UpdateType.CallbackQuery:
-                {
-                    if (update.CallbackQuery != null)
-                    {
-                        Message? message = update.CallbackQuery.Message;
-
-                        int? topic = null;
-
-                        if (message?.MessageThreadId > 0)
-                        {
-                            topic = message.MessageThreadId;
-                        }
-
-                        if (message == null)
-                            return;
-
-                        switch (update.CallbackQuery.Data)
-                        {
-                            case "loginChangeButton":
-                                {
-                                    await _botClient.SendMessage(message.Chat, "Введите новый логин (пример DEV\\Name.Surname)");
-                                    await _usersDataService.ChangeStatus(message.Chat.Id, "/changeLogin");
-                                }
-                                break;
-
-                            case "registerButton":
-                                {
-                                    await _botClient.SendMessage(message.Chat, "Введите логин (пример DEV\\Name.Surname)");
-                                }
-                                break;
-
-                            case "notificationSettings":
-                                {
-                                    List<string> projects = _notificationTypesService.GetProjects();
-
-                                    InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-                                    for (int i = 0; i < projects.Count; i++)
-                                    {
-                                        if (i % 3 == 0)
-                                        {
-                                            inlineKeyboard.AddNewRow();
-                                        }
-
-                                        inlineKeyboard.AddButton(new InlineKeyboardButton(projects[i], projects[i]));
-                                    }
-
-                                    await _botClient.EditMessageReplyMarkup(
-                                        message.Chat.Id,
-                                        message.Id,
-                                        replyMarkup: inlineKeyboard);
-                                }
-                                break;
-                        }
-
-                        if (await _notificationTypesService.GetProjectByName(update.CallbackQuery.Data ?? ""))
-                        {
-                            List<string> types = await _notificationTypesService.GetNotifications(message.Chat.Id, update.CallbackQuery.Data ?? "");
-
-                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-                            foreach (string _type in types)
-                            {
-                                inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
-                            }
-
-                            await _botClient.SendMessage(
-                                message.Chat.Id,
-                                $"Настройка оповещений для проекта {Markdown.Escape(update.CallbackQuery.Data)}",
-                                parseMode: ParseMode.MarkdownV2,
-                                replyMarkup: inlineKeyboard,
-                                messageThreadId: topic);
-                        }
-                        else if (message.Text?.Contains("Настройка оповещений") ?? false)
-                        {
-                            Match projectMatch = Regex.Match(message.Text, @"([\w.-]+(\([\w.-]+\))?)$");
-
-                            if (projectMatch.Success)
-                            {
-                                string project = projectMatch.Groups[1].Value;
-                                long chatId = message.Chat.Id;
-                                string command = update.CallbackQuery.Data ?? "";
-
-                                List<string> newNotifys = await _notificationTypesService.SetOrDeleteChatProjectNotification(project, chatId, command);
-
-                                InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-                                foreach (string _type in newNotifys)
-                                {
-                                    inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
-                                }
-
-                                await _botClient.EditMessageReplyMarkup(
-                                    message.Chat.Id,
-                                    message.Id,
-                                    inlineKeyboard);
-                            }
-                        }
-
-                        await _botClient.AnswerCallbackQuery(update.CallbackQuery.Id);
-                    }
-                }
-                break;
-            case UpdateType.EditedMessage:
-                break;
-            case UpdateType.ChannelPost:
-                break;
-            case UpdateType.EditedChannelPost:
-                break;
-            case UpdateType.ShippingQuery:
-                break;
-            case UpdateType.PreCheckoutQuery:
-                break;
-            case UpdateType.Poll:
-                break;
-            case UpdateType.PollAnswer:
-                break;
-            case UpdateType.MyChatMember:
-                break;
-            case UpdateType.ChatMember:
-                break;
-            case UpdateType.ChatJoinRequest:
-                break;
-            case UpdateType.MessageReaction:
-                break;
-            case UpdateType.MessageReactionCount:
-                break;
-            case UpdateType.ChatBoost:
-                break;
-            case UpdateType.RemovedChatBoost:
-                break;
-            case UpdateType.BusinessConnection:
-                break;
-            case UpdateType.BusinessMessage:
-                break;
-            case UpdateType.EditedBusinessMessage:
-                break;
-            case UpdateType.DeletedBusinessMessages:
-                break;
-            case UpdateType.PurchasedPaidMedia:
-                break;
-            default:
-                break;
-        }
-    }
-
-    /// <summary>
-    /// Обрабатывает сообщение.
-    /// </summary>
-    /// <param name="msg">Cообщение</param>
-    private async Task HandleOnMessage(Message msg)
-    {
-        string? botName = _botClient.GetMe().Result.Username;
         try
         {
-            _logger.LogInformation($"Вызвана команда {msg.Text} пользователем {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username}");
-
-            switch (msg.Text)
+            switch (type)
             {
-                case string when msg.Text == $"/start@{botName}":
-                case "/start":
+                case UpdateType.Message:
+                    if (msg != null)
                     {
-                        switch (msg.Chat.Type)
-                        {
-                            case ChatType.Group:
-                            case ChatType.Supergroup:
-                                {
-                                    if (!await _usersDataService.IsContainUser(msg.Chat.Id))
-                                    {
-                                        await _usersDataService.SaveNewUser(msg.Chat.Title, msg.Chat.Id, msg.Chat.Id);
-                                    }
-
-                                    if (!await _usersDataService.IsContaionTopic(msg.MessageThreadId ?? -1, msg.Chat.Id))
-                                    {
-                                        await _usersDataService.SaveTopicToChatId(msg.MessageThreadId ?? -1, msg.Chat.Id);
-                                    }
-
-                                    await sendBaseInformation(msg, msg.MessageThreadId ?? -1);
-                                }
-                                break;
-
-                            case ChatType.Private:
-                                {
-                                    if (await _userChecker.CheckExistUser(msg.From?.Id ?? -1))
-                                    {
-                                        if (!await _usersDataService.IsContainUser(msg.Chat.Id))
-                                        {
-                                            await _usersDataService.SaveNewUser(null, msg.Chat.Id, msg.From?.Id ?? -1);
-                                            await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
-
-                                            InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup(
-                                            new List<InlineKeyboardButton[]>()
-                                            {
-                                                new InlineKeyboardButton[] // тут создаем массив кнопок
-                                                {
-                                                     InlineKeyboardButton.WithCallbackData("Регистрация", "registerButton"),
-                                                }
-                                            });
-
-                                            await _botClient.SendMessage(
-                                                msg.Chat.Id,
-                                                "Выберите действие",
-                                                parseMode: ParseMode.MarkdownV2,
-                                                replyMarkup: inlineKeyboard);
-                                        }
-                                        else
-                                        {
-                                            await _botClient.SendMessage(msg.Chat, "Вы уже авторизированы");
-
-                                            await sendBaseInformation(msg, null);
-                                        }
-                                    }
-                                }
-                                break;
-                        }
-
+                        await HandleMessage(msg);
                     }
                     break;
 
-                case "/register":
-                    await _botClient.SendMessage(msg.Chat, "Enter your login");
-                    await _usersDataService.ChangeStatus(msg.Chat.Id, "/register");
-                    break;
-
-                case string when msg.Text.Contains("/set"):
+                case UpdateType.CallbackQuery:
+                    if (update.CallbackQuery != null && update.CallbackQuery.Message != null)
                     {
-                        if (msg.Chat.Type is ChatType.Group or ChatType.Supergroup)
-                        {
-                            string project = msg.Text.Replace("/set ", "");
-
-                            await _usersDataService.UpdateTopic(msg.MessageThreadId ?? -1, msg.Chat.Id, project);
-                        }
+                        await _callbackQueryService.HandleCallbackQuery(update.CallbackQuery, update.CallbackQuery.Message);
                     }
-                    break;
-
-                case "/help":
-                    {
-                        StringBuilder sb = new StringBuilder();
-
-                        sb.AppendLine("*Обновление пуллреквеста*");
-                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет всех ревьюеров, которые находятся в пуллреквесте, о том, что произошли изменения (запушили код, аппрувнули и т.п.)"));
-                        sb.AppendLine();
-                        sb.AppendLine("*Комментирование пуллреквеста*");
-                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет всех ревьюеров, которые находятся в пуллреквесте, о том, что в пуллреквесте появились комментарии"));
-                        sb.AppendLine();
-                        sb.AppendLine("*Создание пуллреквеста*");
-                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет всех ревьюеров, которые находятся в пуллреквесте, о том, что был открыт пуллреквест"));
-                        sb.AppendLine();
-                        sb.AppendLine("*Создание рабочего элемента*");
-                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о создании рабочего элемента человека, на которого он сразу был назначен"));
-                        sb.AppendLine();
-                        sb.AppendLine("*Обновление рабочего элемента*");
-                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о изменении назначения или приоритета человека, на которого назначен рабочий элемент"));
-                        sb.AppendLine();
-                        sb.AppendLine("*Смена состояния сборки*");
-                        sb.AppendLine(Markdown.Escape("Тип оповещения, который уведомляет о изменении состояния сборки человека, который открыл пуллреквест"));
-                        sb.AppendLine();
-                        sb.AppendLine("*Оповещения АКУЗа*");
-                        sb.AppendLine(Markdown.Escape("Допустим, если включить уведомления NAO, будут приходить все уведомления со сборок в папке \\\\Regions\\\\NAO, так же со всеми остальными регионами"));
-                        sb.AppendLine(Markdown.Escape("Если включить Others, будут приходить оповещения о всех сборках, кроме регионов (больше нужно для тех, кто собирает версии)"));
-                        sb.AppendLine();
-                        sb.AppendLine(char.ConvertFromUtf32(0x2757) + Markdown.Escape("Оповещения не приходят тому, кто триггернул") + char.ConvertFromUtf32(0x2757));
-
-                        await _botClient.SendMessage(msg.Chat, sb.ToString(), ParseMode.MarkdownV2);
-                    }
-                    break;
-
-                default:
-                    await HandleOnMessageWithState(msg);
                     break;
             }
         }
@@ -344,62 +74,42 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
     }
 
     /// <summary>
-    /// Обрабатывает сообщение с проверкой состояния.
+    /// Обработка сообщений пользователей
     /// </summary>
-    /// <param name="msg">Сообщение</param>
-    private async Task HandleOnMessageWithState(Message msg)
+    /// <param name="msg"></param>
+    /// <returns></returns>
+    private async Task HandleMessage(Message msg)
     {
-        if (msg.Chat.Type == ChatType.Group || msg.Chat.Type == ChatType.Supergroup)
-        {
-            return;
-        }
+        string? botName = _botClient.GetMe().Result.Username;
 
-        string status = await _usersDataService.GetStatus(msg.Chat.Id);
-        switch (status)
+        switch (msg.Text)
         {
-            case "/register":
-                if (_usersDataService.IsContainUser(msg.Chat.Id).Result && msg.Text != null)
+            case string when msg.Text == $"/start@{botName}":
+            case "/start":
                 {
-                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id);
-                    await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
-                    await _usersDataService.CancelStatus(msg.Chat.Id);
-
-                    _logger.LogInformation($"Пользователь {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username} зарегестрирован");
-
-                    await sendBaseInformation(msg, null);
+                    await _commandService.HandleStartCommand(msg);
                 }
                 break;
 
-            case "/changeLogin":
+            case string when msg.Text.Contains("/set"):
                 {
-                    _logger.LogInformation($"Пользователь {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username} изменил логин");
-                    await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id, msg.From?.Id ?? -1);
-                    await _botClient.SendMessage(msg.Chat, "Логин изменен");
-                    await _usersDataService.CancelStatus(msg.Chat.Id);
+                    await _commandService.HandleSetCommand(msg);
                 }
                 break;
+
+            case "/help":
+            case string when msg.Text == $"/help@{botName}":
+                {
+                    await _commandService.HandleHelpCommand(msg);
+                }
+                break;
+
             default:
+                {
+                    await _commandService.HandleDefaultCommand(msg);
+                }
                 break;
         }
-    }
-
-    private async Task sendBaseInformation(Message msg, int? threadId)
-    {
-        InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
-
-        inlineKeyboard.AddButton(InlineKeyboardButton.WithCallbackData("Настройка оповещений", "notificationSettings"));
-
-        if (msg.Chat.Type != ChatType.Group && msg.Chat.Type != ChatType.Supergroup)
-        {
-            inlineKeyboard.AddButton(InlineKeyboardButton.WithCallbackData("Изменить логин", "loginChangeButton"));
-        }
-
-        await _botClient.SendMessage(
-            msg.Chat.Id,
-            "Выберите действие",
-            parseMode: ParseMode.MarkdownV2,
-            replyMarkup: inlineKeyboard,
-            messageThreadId: threadId);
     }
 
     /// <summary>
