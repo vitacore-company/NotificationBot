@@ -54,7 +54,7 @@ namespace NotificationsBot.Handlers
 
             string cacheKey = $"filtered_users_{eventType}_{project}";
 
-            var filteredUsers = await _memoryCache.GetOrCreateAsync<Dictionary<long, int?>>(cacheKey, async entry =>
+            Dictionary<long, int?>? filteredUsers = await _memoryCache.GetOrCreateAsync<Dictionary<long, int?>>(cacheKey, async entry =>
                 {
                     entry.AddExpirationToken(new CancellationChangeToken(_notificationCache.GetOrCreateResetToken(eventType, project)));
                     entry.AddExpirationToken(getEventToken(eventType, project));
