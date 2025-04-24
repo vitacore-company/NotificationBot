@@ -26,7 +26,7 @@ namespace NotificationsBot.Handlers
 
             string author = resource.Resource.comment.author.uniqueName;
 
-            //users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
+            users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
             Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                 resource.EventType,
                 resource.Resource.pullRequest.Repository.Project.Name,
