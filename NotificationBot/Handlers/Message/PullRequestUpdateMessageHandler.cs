@@ -61,7 +61,7 @@ namespace NotificationsBot.Handlers
 
             if (matchText.Success)
             {
-                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()), resource.Resource.PullRequestId.ToString());
 
                 StringBuilder sb = new StringBuilder();
 
