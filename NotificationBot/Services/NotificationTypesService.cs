@@ -65,7 +65,7 @@ namespace NotificationsBot.Services
             }
 
             await _context.SaveChangesAsync();
-            _cache.RemoveCacheByKey(chatId, project);
+            _cache.RemoveUserCacheByKey(chatId, project);
             _cache.RemoveEventCache(notification.EventType, project);
 
             return await _cache.GetUserNotificationsAsync(chatId, project);

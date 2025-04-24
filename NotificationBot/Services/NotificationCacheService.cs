@@ -47,7 +47,7 @@ namespace NotificationsBot.Services
         /// <param name="chatId"></param>
         /// <param name="project"></param>
         /// <returns></returns>
-        public void RemoveCacheByKey(long chatId, string project)
+        public void RemoveUserCacheByKey(long chatId, string project)
         {
             string cacheKey = $"notifications_{chatId}_{project}";
 
