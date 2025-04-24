@@ -21,7 +21,8 @@ namespace NotificationsBot.Handlers
     public class PullRequestUpdateMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestUpdatedCustomPayload>
     {
         private readonly IHandlerFactory _createHandler;
-        public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IHandlerFactory createHandler, IMemoryCache memoryCache) : base(context, botClient, userHolder, logger, memoryCache)
+
+        public PullRequestUpdateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache, IHandlerFactory createHandler) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
         {
             _createHandler = createHandler;
         }

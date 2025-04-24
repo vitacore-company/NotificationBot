@@ -43,6 +43,7 @@ public static class ServiceExtension
         services.AddMemoryCache();
         services.AddScoped<ICommandService, CommandService>();
         services.AddScoped<ICallbackQueryService, CallbackQueryService>();
+        services.AddScoped<INotificationCacheService, NotificationCacheService>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>

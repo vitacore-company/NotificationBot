@@ -16,7 +16,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class WorkItemUpdatedMessageHandler : BaseMessageHandler, IMessageHandler<WorkItemUpdatedCustomPayload>
     {
-        public WorkItemUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache) : base(context, botClient, userHolder, logger, memoryCache)
+        public WorkItemUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
         {
         }
 

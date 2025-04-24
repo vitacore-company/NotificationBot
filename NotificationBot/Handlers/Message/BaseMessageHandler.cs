@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Primitives;
 using Microsoft.VisualStudio.Services.Common;
 using NotificationsBot.Interfaces;
 using System.Text;
@@ -21,14 +22,20 @@ namespace NotificationsBot.Handlers
         /// </summary>
         private readonly IMemoryCache _memoryCache;
 
+        /// <summary>
+        /// Сервис кеширования отфильтрованных данных пользователей
+        /// </summary>
+        private readonly INotificationCacheService _notificationCache;
+
         protected BaseMessageHandler(AppContext context, ITelegramBotClient botClient,
-            IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache)
+            IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache)
         {
             _context = context;
             _botClient = botClient;
             _userHolder = userHolder;
             _logger = logger;
             _memoryCache = memoryCache;
+            _notificationCache = notificationCache;
         }
 
         /// <summary>
@@ -45,24 +52,61 @@ namespace NotificationsBot.Handlers
                 return [];
             }
 
-            // Получение или кеширование типа нотификации и проекта
-            if (!_memoryCache.TryGetValue((eventType, project), out (int?, int?) ids))
-            {
-                ids = await getNotificationAndProjectIds(eventType, project);
-                _memoryCache.Set((eventType, project), ids);
-            }
+            string cacheKey = $"filtered_users_{eventType}_{project}";
 
-            (int? notificationTypeId, int? projectId) = ids;
+            Dictionary<long, int?>? filteredUsers = await _memoryCache.GetOrCreateAsync<Dictionary<long, int?>>(cacheKey, async entry =>
+                {
+                    entry.AddExpirationToken(new CancellationChangeToken(_notificationCache.GetOrCreateResetToken(eventType, project)));
+                    entry.AddExpirationToken(getEventToken(eventType, project));
+                    entry.SetAbsoluteExpiration(TimeSpan.FromHours(3));
 
-            if (notificationTypeId <= 0 || projectId <= 0)
+                    // Получение или кеширование типа нотификации и проекта
+                    if (!_memoryCache.TryGetValue((eventType, project), out (int?, int?) ids))
+                    {
+                        ids = await getNotificationAndProjectIds(eventType, project);
+                        _memoryCache.Set((eventType, project), ids);
+                    }
+
+                    (int? notificationTypeId, int? projectId) = ids;
+
+                    if (notificationTypeId <= 0 || projectId <= 0)
+                    {
+                        return [];
+                    }
+
+                    Dictionary<long, int?> filtered = await getFilteredUsersAndGroups(notificationTypeId.GetValueOrDefault(), projectId.GetValueOrDefault(), users);
+
+                    return filtered;
+                });
+
+            if (filteredUsers == null || filteredUsers.Count == 0)
             {
                 return [];
             }
 
-            Dictionary<long, int?> filteredUsers = await getFilteredUsersAndGroups(notificationTypeId.GetValueOrDefault(), projectId.GetValueOrDefault(), users);
             _logger.LogInformation($"Получение пользователей для эвента {eventType}, проект {project}: {string.Join(',', filteredUsers)}");
 
             return filteredUsers;
+        }
+
+        /// <summary>
+        /// Получение токена для кеширования пользователей по проекту и эвенту
+        /// </summary>
+        /// <param name="eventType"></param>
+        /// <param name="project"></param>
+        /// <returns></returns>
+        private IChangeToken getEventToken(string eventType, string project)
+        {
+            string tokenKey = $"{eventType}_{project}";
+            CancellationTokenSource ct = new CancellationTokenSource();
+
+            IChangeToken? token = _memoryCache.GetOrCreate(tokenKey, entry =>
+            {
+                entry.SetAbsoluteExpiration(TimeSpan.FromHours(3));
+                return new CancellationChangeToken(ct.Token);
+            });
+
+            return token ?? new CancellationChangeToken(ct.Token);
         }
 
         /// <summary>
