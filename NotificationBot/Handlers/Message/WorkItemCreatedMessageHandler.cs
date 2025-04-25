@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using NotificationsBot.Extensions;
+﻿using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Utils;
 using System.Text;
@@ -16,7 +15,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class WorkItemCreatedMessageHandler : BaseMessageHandler, IMessageHandler<WorkItemCreatedCustomPayload>
     {
-        public WorkItemCreatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
+        public WorkItemCreatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 

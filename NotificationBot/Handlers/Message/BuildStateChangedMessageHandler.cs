@@ -1,5 +1,4 @@
-﻿using Microsoft.Extensions.Caching.Memory;
-using NotificationsBot.Extensions;
+﻿using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.BuildStateChanged;
 using NotificationsBot.Utils;
@@ -17,7 +16,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class BuildStateChangedMessageHandler : BaseMessageHandler, IMessageHandler<BuildStateChangedCustomPayload>
     {
-        public BuildStateChangedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, IMemoryCache memoryCache, INotificationCacheService notificationCache) : base(context, botClient, userHolder, logger, memoryCache, notificationCache)
+        public BuildStateChangedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
