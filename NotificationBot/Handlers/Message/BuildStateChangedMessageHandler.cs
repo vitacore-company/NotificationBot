@@ -25,7 +25,7 @@ namespace NotificationsBot.Handlers
             HashSet<string> users = new HashSet<string>();
 
             users.Add(resource.Resource.RequestedFor.UniqueName);
-            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()), string.Empty);
+            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             if (chatIds.Count > 0)
             {

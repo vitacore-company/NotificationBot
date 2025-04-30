@@ -30,7 +30,7 @@ namespace NotificationsBot.Handlers
                 users.RemoveWhere(x => x.Contains(remove));
             }
 
-            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()), resource.Resource.PullRequestId.ToString());
+            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Repository.Project.Name, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
 

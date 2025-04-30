@@ -38,9 +38,9 @@ namespace NotificationsBot.Handlers
         /// <param name="project"></param>
         /// <param name="users"></param>
         /// <returns></returns>
-        protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(string eventType, string project, List<long> users, string identity)
+        protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(string eventType, string project, List<long> users)
         {
-            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}_{identity}";
+            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}";
 
             string dependencyKey = $"{eventType}_{project}";
 
