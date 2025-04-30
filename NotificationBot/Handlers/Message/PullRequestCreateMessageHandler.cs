@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNet.WebHooks.Payloads;
-using NotificationsBot.Extensions;
+﻿using NotificationsBot.Extensions;
 using NotificationsBot.Interfaces;
+using NotificationsBot.Models.AzureModels;
 using NotificationsBot.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,14 +14,19 @@ namespace NotificationsBot.Handlers
     /// git.pullrequest.created
     /// </remarks>
     /// </summary>
-    public class PullRequestCreateMessageHandler : BaseMessageHandler, IMessageHandler<GitPullRequestCreatedPayload>
+    public class PullRequestCreateMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestCreateCustomPayload>
     {
         public PullRequestCreateMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
-        public async Task Handle(GitPullRequestCreatedPayload resource)
+        public async Task Handle(PullRequestCreateCustomPayload resource)
         {
+            if (resource.Resource.IsDraft)
+            {
+                return;
+            }
+
             HashSet<string> users = resource.Resource.Reviewers.Select(reviewer => reviewer.UniqueName)?.ToHashSet() ?? new HashSet<string>();
             Match match = Regex.Match(resource.DetailedMessage.Text, @"\b\w+\s+\w\.\s+(\w+)");
             if (match.Success)
