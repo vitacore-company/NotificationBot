@@ -239,6 +239,23 @@ namespace NotificationsBot.Handlers
         }
 
         /// <summary>
+        /// Получение текста из формата html
+        /// </summary>
+        /// <param name="htmlText"></param>
+        /// <returns></returns>
+        protected string GetTextFromHtml(string htmlText)
+        {
+            if (string.IsNullOrEmpty(htmlText))
+            {
+                return string.Empty;
+            }
+
+            string text = Regex.Replace(htmlText, "<[^>]*>", string.Empty).Trim();
+
+            return text;
+        }
+
+        /// <summary>
         /// Приводит сообщение к формату Markdown для телеграмма (экранирует)
         /// </summary>
         /// <param name="markdown"></param>

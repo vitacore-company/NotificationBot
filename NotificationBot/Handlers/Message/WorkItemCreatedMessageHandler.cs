@@ -48,6 +48,12 @@ namespace NotificationsBot.Handlers
                 sb.Append("*Priority*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority));
                 sb.AppendLine();
+                if (!string.IsNullOrEmpty(GetTextFromHtml(resource.Resource.Fields.SystemDescription)))
+                {
+                    sb.Append("*Description*: ");
+                    sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.SystemDescription)));
+                    sb.AppendLine();
+                }
                 sb.Append("*Assigned to*: ");
                 sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.DisplayName));
                 sb.AppendLine();

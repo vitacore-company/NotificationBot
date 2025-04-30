@@ -25,7 +25,9 @@ namespace NotificationsBot.Handlers
             {
                 return;
             }
-            if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
+            if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null 
+                && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null
+                && resource.Resource.Fields.Description == null)
             {
                 return;
             }
@@ -69,6 +71,17 @@ namespace NotificationsBot.Handlers
                     sb.AppendLine();
                     sb.Append("~Old Priority: ");
                     sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue) + "~");
+
+                    if (!users.Any())
+                    {
+                        users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
+                    }
+                }
+                if (resource.Resource.Fields.Description != null)
+                {
+                    sb.Append("*Description*: ");
+                    sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.Description.NewValue)));
+                    sb.AppendLine();
 
                     if (!users.Any())
                     {
