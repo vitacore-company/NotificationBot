@@ -35,7 +35,7 @@ namespace NotificationsBot.Handlers
                 HashSet<string> users = new HashSet<string>();
                 users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
 
-                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()), itemId);
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
                 StringBuilder sb = new StringBuilder();
                 sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
@@ -48,6 +48,12 @@ namespace NotificationsBot.Handlers
                 sb.Append("*Priority*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority));
                 sb.AppendLine();
+                if (!string.IsNullOrEmpty(GetTextFromHtml(resource.Resource.Fields.SystemDescription)))
+                {
+                    sb.Append("*Description*: ");
+                    sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.SystemDescription)));
+                    sb.AppendLine();
+                }
                 sb.Append("*Assigned to*: ");
                 sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.DisplayName));
                 sb.AppendLine();

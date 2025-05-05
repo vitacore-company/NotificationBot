@@ -35,6 +35,21 @@ public class WorkItemUpdatedCustomFields : WorkItemUpdatedFields
     [AllowNull]
     [JsonProperty("Microsoft.VSTS.Common.Priority")]
     public MicrosoftVSTSCommonPriority MicrosoftVSTSCommonPriority { get; set; }
+
+    [AllowNull]
+    [JsonProperty("System.Description")]
+    public SystemDescription Description { get; set; }
+}
+
+public class SystemDescription
+{
+    [AllowNull]
+    [JsonProperty("oldValue")]
+    public string OldValue { get; set; }
+
+    [AllowNull]
+    [JsonProperty("newValue")]
+    public string NewValue { get; set; }
 }
 
 public class AssignedTo

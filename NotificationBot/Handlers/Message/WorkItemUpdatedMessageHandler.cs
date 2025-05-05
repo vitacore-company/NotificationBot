@@ -25,7 +25,9 @@ namespace NotificationsBot.Handlers
             {
                 return;
             }
-            if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
+            if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null 
+                && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null
+                && resource.Resource.Fields.Description == null)
             {
                 return;
             }
@@ -75,6 +77,17 @@ namespace NotificationsBot.Handlers
                         users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
                     }
                 }
+                if (resource.Resource.Fields.Description != null)
+                {
+                    sb.Append("*Description*: ");
+                    sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.Description.NewValue)));
+                    sb.AppendLine();
+
+                    if (!users.Any())
+                    {
+                        users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
+                    }
+                }
 
                 string itemId = matchItemId.Groups[1].Value;
 
@@ -82,7 +95,7 @@ namespace NotificationsBot.Handlers
 
                 sb.AddTags(resource.Resource.Revision.Fields.SystemTeamProject, "WorkItemUpdate");
 
-                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()), matchItemId.Value);
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
                 _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
 

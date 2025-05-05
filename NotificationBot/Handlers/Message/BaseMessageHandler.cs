@@ -38,14 +38,9 @@ namespace NotificationsBot.Handlers
         /// <param name="project"></param>
         /// <param name="users"></param>
         /// <returns></returns>
-        protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(string eventType, string project, List<long> users, string identity)
+        protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(string eventType, string project, List<long> users)
         {
-            if (users.Count == 0)
-            {
-                return [];
-            }
-
-            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}_{identity}";
+            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}";
 
             string dependencyKey = $"{eventType}_{project}";
 
@@ -241,6 +236,23 @@ namespace NotificationsBot.Handlers
             }
 
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Получение текста из формата html
+        /// </summary>
+        /// <param name="htmlText"></param>
+        /// <returns></returns>
+        protected string GetTextFromHtml(string htmlText)
+        {
+            if (string.IsNullOrEmpty(htmlText))
+            {
+                return string.Empty;
+            }
+
+            string text = Regex.Replace(htmlText, "<[^>]*>", string.Empty).Trim();
+
+            return text;
         }
 
         /// <summary>
