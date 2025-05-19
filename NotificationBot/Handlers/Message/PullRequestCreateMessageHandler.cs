@@ -39,7 +39,7 @@ namespace NotificationsBot.Handlers
 
             StringBuilder sb = new StringBuilder();
 
-            sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.CreatedBy.DisplayName} create ") + GetLinkFromMarkdown(resource.DetailedMessage.Markdown));
+            sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.CreatedBy.DisplayName} created ") + GetLinkFromMarkdown(resource.DetailedMessage.Markdown));
             sb.AddProject(Utilites.ProjectLinkConfigure(resource.Resource.Repository.Project.Name, resource.Resource.Repository.Name));
             sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Title));
 
