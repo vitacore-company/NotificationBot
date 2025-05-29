@@ -30,7 +30,7 @@ namespace NotificationsBot.Services
             string cacheKey = $"notifications_{chatId}_{project}";
 
             List<string> userNotifys = await _cacheService.GetOrCreateAsync(cacheKey, async () =>
-                await getNotificationsFromDb(chatId, project), null, TimeSpan.FromMinutes(20));
+                await getNotificationsFromDb(chatId, project), new List<string>() { $"notifications_{project}" }, TimeSpan.FromMinutes(5));
 
             return userNotifys ?? [];
         }
@@ -82,7 +82,7 @@ namespace NotificationsBot.Services
         public async Task<List<string>> GetAllProjectsAsync()
         {
             List<string> projects = await _cacheService.GetOrCreateAsync(nameof(Projects), async () =>
-                await _context.Projects.Select(x => x.Name).ToListAsync(), null, TimeSpan.FromMinutes(30));
+                await _context.Projects.Select(x => x.Name).ToListAsync(), null, TimeSpan.FromMinutes(5));
 
             return projects ?? [];
         }
