@@ -21,6 +21,11 @@ namespace NotificationsBot.Middleware
         /// <returns>Пропускаем, если пришел с адреса tfs.dev.vitacore.ru</returns>
         public async Task Invoke(HttpContext context)
         {
+            if (context.Connection.RemoteIpAddress == null)
+            {
+                return;
+            }
+
             IPHostEntry hostEntry = Dns.GetHostEntry($"{context.Connection.RemoteIpAddress}");
 
             if (string.IsNullOrEmpty(hostEntry.HostName))
