@@ -21,8 +21,12 @@ namespace NotificationsBot.Handlers
         /// </summary>
         private readonly ICacheService _cacheService;
 
-        protected BaseMessageHandler(AppContext context, ITelegramBotClient botClient,
-            IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService)
+        protected BaseMessageHandler(
+            AppContext context,
+            ITelegramBotClient botClient,
+            IUserHolder userHolder,
+            ILogger<BaseMessageHandler> logger,
+            ICacheService cacheService)
         {
             _context = context;
             _botClient = botClient;
@@ -38,14 +42,19 @@ namespace NotificationsBot.Handlers
         /// <param name="project"></param>
         /// <param name="users"></param>
         /// <returns></returns>
-        protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(string eventType, string project, List<long> users)
+        protected async Task<Dictionary<long, int?>> FilteredByNotifyUsers(
+            string eventType,
+            string project,
+            List<long> users)
         {
-            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join("", users)}";
+            string cacheKey = $"filtered_users_{eventType}_{project}_{string.Join(string.Empty, users)}";
 
             string dependencyKey = $"{eventType}_{project}";
 
-            Dictionary<long, int?> filetedUsers = await _cacheService.GetOrCreateAsync(cacheKey, async () =>
-                await getFilteredUsersInternal(eventType, project, users), new List<string>() { dependencyKey });
+            Dictionary<long, int?> filetedUsers = await _cacheService.GetOrCreateAsync(
+                cacheKey,
+                async () => await getFilteredUsersInternal(eventType, project, users),
+                new List<string>() { dependencyKey });
 
             return filetedUsers;
         }
@@ -57,7 +66,10 @@ namespace NotificationsBot.Handlers
         /// <param name="project"></param>
         /// <param name="users"></param>
         /// <returns></returns>
-        private async Task<Dictionary<long, int?>> getFilteredUsersInternal(string eventType, string project, List<long> users)
+        private async Task<Dictionary<long, int?>> getFilteredUsersInternal(
+            string eventType,
+            string project,
+            List<long> users)
         {
             (int? notificationTypeId, int? projectId) = await getNotificationAndProjectIds(eventType, project);
 
@@ -71,7 +83,8 @@ namespace NotificationsBot.Handlers
                 projectId.GetValueOrDefault(),
                 users);
 
-            _logger.LogInformation($"Получение пользователей для эвента {eventType}, проект {project}: {string.Join(',', filteredUsers)}");
+            _logger.LogInformation(
+                $"Получение пользователей для эвента {eventType}, проект {project}: {string.Join(',', filteredUsers)}");
 
             return filteredUsers;
         }
@@ -86,21 +99,24 @@ namespace NotificationsBot.Handlers
         {
             string cacheKey = $"ids_{eventType}_{project}";
 
-            (int?, int?) ids = await _cacheService.GetOrCreateAsync(cacheKey, async () =>
-                await getNotificationTypeAndProject(eventType, project));
+            (int?, int?) ids = await _cacheService.GetOrCreateAsync(
+                cacheKey,
+                async () => await getNotificationTypeAndProject(eventType, project));
 
             return ids;
         }
 
         private async Task<(int?, int?)> getNotificationTypeAndProject(string eventType, string project)
         {
+            _ = await checkIsProjectUnknown(project);
+
+            _ = await checkIsNotificationUnknown(eventType, project);
+
             int? notificationTypeId = await _context.NotificationTypes
                 .Where(x => x.EventType == eventType)
                 .Where(x => x.Projects.Any(p => p.Name == project))
                 .Select(x => (int?)x.Id)
                 .SingleOrDefaultAsync();
-
-            _ = await checkIsProjectUnknown(project);
 
             int? projectId = await _context.Projects
                 .Where(x => x.Name == project)
@@ -119,14 +135,38 @@ namespace NotificationsBot.Handlers
         {
             if (!_context.Projects.Any(x => x.Name == project))
             {
-                // получение всех типов оповещений, которые не начинаются как АКУЗовские - не с \\
-                List<Models.Database.NotificationTypes> notificationTypes = _context.NotificationTypes.Where(x => !x.EventType.StartsWith("\\\\")).ToList();
-
-                await _context.Projects.AddAsync(new Models.Database.Projects() { Name = project, NotificationTypes = notificationTypes });
+                await _context.Projects
+                    .AddAsync(new Projects() { Name = project });
 
                 await _context.SaveChangesAsync();
 
                 _cacheService.InvalidateByKey(nameof(Projects));
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Проверка на существование такого типа нотификации
+        /// </summary>
+        /// <param name="project"></param>
+        /// <param name="eventType"></param>
+        /// <returns></returns>
+        private async Task<bool> checkIsNotificationUnknown(string eventType, string project)
+        {
+            if (!_context.NotificationTypes.Any(x => x.EventType == eventType))
+            {
+                NotificationTypes nt = new NotificationTypes() { EventDescription = eventType, EventType = eventType };
+
+                await _context.NotificationTypes
+                    .AddAsync(nt);
+
+                Projects _project = _context.Projects.FirstOrDefault(x => x.Name == project);
+                _project.NotificationTypes.Add(nt);
+
+                await _context.SaveChangesAsync();
+
+                _cacheService.InvalidateDependencies(new List<string>() { $"notifications_{project}" });
             }
 
             return true;
@@ -139,7 +179,10 @@ namespace NotificationsBot.Handlers
         /// <param name="projectId"></param>
         /// <param name="users"></param>
         /// <returns></returns>
-        private async Task<Dictionary<long, int?>> getFilteredUsersAndGroups(int notificationTypeId, int projectId, List<long> users)
+        private async Task<Dictionary<long, int?>> getFilteredUsersAndGroups(
+            int notificationTypeId,
+            int projectId,
+            List<long> users)
         {
             Dictionary<long, int?> filteredUsers = await _context.NotificationsOnProjectChat
                 .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
@@ -170,21 +213,24 @@ namespace NotificationsBot.Handlers
 
             foreach ((long chatId, int? threadId) in chats)
             {
-                sendTasks.Add(_botClient.SendMessage(
-                    chatId,
-                    message,
-                    Telegram.Bot.Types.Enums.ParseMode.MarkdownV2,
-                    messageThreadId: threadId > 0 ? threadId : null));
+                sendTasks.Add(
+                    _botClient.SendMessage(
+                        chatId,
+                        message,
+                        Telegram.Bot.Types.Enums.ParseMode.MarkdownV2,
+                        messageThreadId: threadId > 0 ? threadId : null));
             }
 
             // Отправляем и забываем про него, отработает само, если нет, придет на ошибку
-            _ = Task.WhenAll(sendTasks).ContinueWith(t =>
-            {
-                if (t.IsFaulted)
-                {
-                    _logger.LogError(t.Exception, "Ошибка отправки сообщения");
-                }
-            });
+            _ = Task.WhenAll(sendTasks)
+                .ContinueWith(
+                    t =>
+                    {
+                        if (t.IsFaulted)
+                        {
+                            _logger.LogError(t.Exception, "Ошибка отправки сообщения");
+                        }
+                    });
         }
 
         /// <summary>
@@ -195,23 +241,22 @@ namespace NotificationsBot.Handlers
         /// <returns></returns>
         private async Task<Dictionary<long, int?>> getFilteredGroupChats(int notificationTypeId, int projectId)
         {
-            IQueryable<int> topicIds = _context.Topics
-                .Where(x => x.ProjectsId == projectId)
-                .Select(x => x.Id);
+            IQueryable<int> topicIds = _context.Topics.Where(x => x.ProjectsId == projectId).Select(x => x.Id);
 
             if (topicIds.Count() > 0)
             {
                 Dictionary<long, int?> groupChats = await _context.NotificationsOnProjectChat
-                .Include(x => x.Users)
-                .ThenInclude(x => x.Topics)
-                .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
-                .Where(x => x.Users.ChatId < 0 && x.Users.Topics.Count > 0)
-                .Select(x => new
-                {
-                    ChatId = x.Users.ChatId,
-                    TopicId = x.Users.Topics.Select(t => t.Id).FirstOrDefault(id => topicIds.Contains(id))
-                })
-                .ToDictionaryAsync(x => x.ChatId, x => (int?)x.TopicId);
+                    .Include(x => x.Users)
+                    .ThenInclude(x => x.Topics)
+                    .Where(x => x.NotificationTypesId == notificationTypeId && x.ProjectId == projectId)
+                    .Where(x => x.Users.ChatId < 0 && x.Users.Topics.Count > 0)
+                    .Select(
+                        x => new
+                        {
+                            ChatId = x.Users.ChatId,
+                            TopicId = x.Users.Topics.Select(t => t.Id).FirstOrDefault(id => topicIds.Contains(id))
+                        })
+                    .ToDictionaryAsync(x => x.ChatId, x => (int?)x.TopicId);
 
                 return groupChats;
             }
@@ -260,9 +305,6 @@ namespace NotificationsBot.Handlers
         /// </summary>
         /// <param name="markdown"></param>
         /// <returns></returns>
-        protected string FormatMarkdownToTelegram(string markdown)
-        {
-            return Markdown.Escape(markdown);
-        }
+        protected string FormatMarkdownToTelegram(string markdown) { return Markdown.Escape(markdown); }
     }
 }
