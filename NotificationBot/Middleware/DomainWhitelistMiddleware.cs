@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using Microsoft.Extensions.Caching.Memory;
+using System.Net;
 
 namespace NotificationsBot.Middleware
 {
@@ -6,12 +7,14 @@ namespace NotificationsBot.Middleware
     {
         private readonly RequestDelegate _next;
         private readonly List<string> _allowedDomains;
+        private readonly IMemoryCache _cacheService;
 
-        public DomainWhitelistMiddleware(RequestDelegate next, IConfiguration configuration)
+        public DomainWhitelistMiddleware(RequestDelegate next, IConfiguration configuration, IMemoryCache cacheService)
         {
             _next = next;
             _allowedDomains = configuration.GetSection("AllowedDomains").Get<List<string>>()
                 ?? new List<string>();
+            _cacheService = cacheService;
         }
 
         /// <summary>
@@ -26,9 +29,13 @@ namespace NotificationsBot.Middleware
                 return;
             }
 
-            IPHostEntry hostEntry = Dns.GetHostEntry($"{context.Connection.RemoteIpAddress}");
+            if (!_cacheService.TryGetValue(context.Connection.RemoteIpAddress.ToString(), out IPHostEntry? hostEntry))
+            {
+                hostEntry = Dns.GetHostEntry($"{context.Connection.RemoteIpAddress}");
+                _cacheService.Set(context.Connection.RemoteIpAddress.ToString(), hostEntry);
+            }
 
-            if (string.IsNullOrEmpty(hostEntry.HostName))
+            if (hostEntry == null || string.IsNullOrEmpty(hostEntry.HostName))
             {
                 return;
             }
