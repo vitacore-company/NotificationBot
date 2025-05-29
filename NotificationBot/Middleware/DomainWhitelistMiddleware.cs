@@ -29,7 +29,7 @@ namespace NotificationsBot.Middleware
             }
 
             bool isAllowed = _allowedDomains.Any(domain =>
-                hostEntry.HostName.StartsWith(domain, StringComparison.OrdinalIgnoreCase));
+                hostEntry.HostName.Contains(domain, StringComparison.OrdinalIgnoreCase));
 
             if (!isAllowed)
             {
