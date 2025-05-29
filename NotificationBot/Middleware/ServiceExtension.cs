@@ -84,7 +84,7 @@ public static class ServiceExtension
         }
 #endif
         hostApplicationBuilder.Services.AddImplInterfaces(hostApplicationBuilder.Configuration);
-
+        
         hostApplicationBuilder.Services.AddControllers()
             .AddXmlSerializerFormatters();
 
@@ -123,6 +123,7 @@ public static class ServiceExtension
         }
 
         webApplication.UseMiddleware<ExceptionMiddleware>();
+        webApplication.UseMiddleware<DomainWhitelistMiddleware>();
 
         return webApplication;
     }
