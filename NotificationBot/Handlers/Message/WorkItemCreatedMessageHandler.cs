@@ -35,7 +35,7 @@ namespace NotificationsBot.Handlers
                 HashSet<string> users = new HashSet<string>();
                 users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
 
-                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin([.. users]));
 
                 StringBuilder sb = new StringBuilder();
                 sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
@@ -63,7 +63,7 @@ namespace NotificationsBot.Handlers
                 sb.AppendLine();
                 sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Fields.SystemTeamProject.Replace('.', '_').Replace("(agile)", "")} #WorkItemCreate"));
 
-                _logger.LogInformation($"Рабочий элемент {matchItemId} создан, сообщение отправлено {string.Join(',', chatIds)}");
+                _logger.LogInformation("Рабочий элемент {matchItemId} создан, сообщение отправлено {chatIds}", matchItemId, string.Join(',', chatIds));
 
                 SendMessages(sb, chatIds);
             }

@@ -69,7 +69,7 @@ public class TelegramCommandHandler : ITelegramCommandHandler, IUpdateHandler
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, ex.Message);
+            _logger.LogError(ex, "Ошибка обработки типа сообщения: {type} \n\rОписание: {Message}", type, ex.Message);
         }
     }
 

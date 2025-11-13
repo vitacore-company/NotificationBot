@@ -72,7 +72,7 @@ namespace NotificationsBot.Handlers
                     sb.Append("~Old Priority: ");
                     sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority.OldValue) + "~");
 
-                    if (!users.Any())
+                    if (users.Count == 0)
                     {
                         users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
                     }
@@ -83,7 +83,7 @@ namespace NotificationsBot.Handlers
                     sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.Description.NewValue)));
                     sb.AppendLine();
 
-                    if (!users.Any())
+                    if (users.Count == 0)
                     {
                         users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
                     }
@@ -97,7 +97,7 @@ namespace NotificationsBot.Handlers
 
                 Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
-                _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
+                _logger.LogInformation("Рабочий элемент {matchItemId} измененен, сообщение отправлено {chatIds}", matchItemId, string.Join(',', chatIds));
 
                 SendMessages(sb, chatIds);
             }
