@@ -14,7 +14,7 @@ namespace NotificationsBot.Handlers
     /// build.complete
     /// </remarks>
     /// </summary>
-    public class BuildStateChangedMessageHandler : BaseMessageHandler, IMessageHandler<BuildStateChangedCustomPayload>
+    public partial class BuildStateChangedMessageHandler : BaseMessageHandler, IMessageHandler<BuildStateChangedCustomPayload>
     {
         public BuildStateChangedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
@@ -37,7 +37,7 @@ namespace NotificationsBot.Handlers
 
                 if (resource.Resource.Result.Equals("failed"))
                 {
-                    string messageText = Regex.Replace(resource.DetailedMessage.Text, @"^Build.*?failed\r\n\r\n- ", "", RegexOptions.Multiline);
+                    string messageText = BuildFailedRegex().Replace(resource.DetailedMessage.Text, "");
                     if (!string.IsNullOrEmpty(messageText))
                     {
                         sb.AppendLine();
@@ -47,10 +47,13 @@ namespace NotificationsBot.Handlers
 
                 sb.AddTags(resource.Resource.Project.Name, "Build");
 
-                _logger.LogInformation($"Состояние сборки изменено, сообщение отправлено {string.Join(',', chatIds)}");
+                _logger.LogInformation("Состояние сборки изменено, сообщение отправлено {chatIds}", string.Join(',', chatIds));
 
                 SendMessages(sb, chatIds);
             }
         }
+
+        [GeneratedRegex(@"^Build.*?failed\r\n\r\n- ", RegexOptions.Multiline)]
+        private static partial Regex BuildFailedRegex();
     }
 }

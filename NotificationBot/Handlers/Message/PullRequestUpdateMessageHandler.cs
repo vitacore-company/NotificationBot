@@ -71,7 +71,7 @@ namespace NotificationsBot.Handlers
                 sb.AddDescription(FormatMarkdownToTelegram(resource.Resource.Description));
                 sb.AddTags(resource.Resource.Repository.Project.Name, "PullRequestUpdate");
 
-                _logger.LogInformation($"Запрос на вытягивание {resource.Resource.PullRequestId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
+                _logger.LogInformation("Запрос на вытягивание {PullRequestId} измененен, сообщение отправлено {chatIds}", resource.Resource.PullRequestId, string.Join(',', chatIds));
 
                 SendMessages(sb, chatIds);
             }

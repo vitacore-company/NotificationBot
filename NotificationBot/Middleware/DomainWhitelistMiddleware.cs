@@ -13,7 +13,7 @@ namespace NotificationsBot.Middleware
         {
             _next = next;
             _allowedDomains = configuration.GetSection("AllowedDomains").Get<List<string>>()
-                ?? new List<string>();
+                ?? [];
             _cacheService = cacheService;
         }
 

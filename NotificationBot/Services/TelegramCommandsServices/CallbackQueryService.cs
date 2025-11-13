@@ -140,7 +140,7 @@ namespace NotificationsBot.Services
             InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
             foreach (string _type in types)
             {
-                inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
+                inlineKeyboard.AddNewRow([InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}")]);
             }
 
             await _botClient.SendMessage(
@@ -174,7 +174,7 @@ namespace NotificationsBot.Services
                     InlineKeyboardMarkup inlineKeyboard = new InlineKeyboardMarkup();
                     foreach (string _type in newNotifys)
                     {
-                        inlineKeyboard.AddNewRow(new InlineKeyboardButton[] { InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}") });
+                        inlineKeyboard.AddNewRow([InlineKeyboardButton.WithCallbackData(_type, $"{_type.Substring(1)}")]);
                     }
 
                     await _botClient.EditMessageReplyMarkup(

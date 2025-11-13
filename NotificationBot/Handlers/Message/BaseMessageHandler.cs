@@ -9,7 +9,7 @@ using Telegram.Bot.Extensions;
 
 namespace NotificationsBot.Handlers
 {
-    public abstract class BaseMessageHandler
+    public abstract partial class BaseMessageHandler
     {
         protected readonly AppContext _context;
         protected readonly ITelegramBotClient _botClient;
@@ -84,7 +84,7 @@ namespace NotificationsBot.Handlers
                 users);
 
             _logger.LogInformation(
-                $"Получение пользователей для эвента {eventType}, проект {project}: {string.Join(',', filteredUsers)}");
+                "Получение пользователей для эвента {eventType}, проект {project}: {filteredUsers}", eventType, project, string.Join(',', filteredUsers));
 
             return filteredUsers;
         }
@@ -161,8 +161,8 @@ namespace NotificationsBot.Handlers
                 await _context.NotificationTypes
                     .AddAsync(nt);
 
-                Projects _project = _context.Projects.FirstOrDefault(x => x.Name == project);
-                _project.NotificationTypes.Add(nt);
+                Projects? _project = _context.Projects.FirstOrDefault(x => x.Name == project);
+                _project?.NotificationTypes.Add(nt);
 
                 await _context.SaveChangesAsync();
 
@@ -243,7 +243,7 @@ namespace NotificationsBot.Handlers
         {
             IQueryable<int> topicIds = _context.Topics.Where(x => x.ProjectsId == projectId).Select(x => x.Id);
 
-            if (topicIds.Count() > 0)
+            if (topicIds.Any())
             {
                 Dictionary<long, int?> groupChats = await _context.NotificationsOnProjectChat
                     .Include(x => x.Users)
@@ -271,7 +271,7 @@ namespace NotificationsBot.Handlers
         /// <returns></returns>
         protected string GetLinkFromMarkdown(string message)
         {
-            Regex rg = new Regex("(?:__|[*#])|\\[(.*?)\\]\\(.*?\\)");
+            Regex rg = MKLinkRegex();
 
             Match match = rg.Match(message);
 
@@ -295,7 +295,7 @@ namespace NotificationsBot.Handlers
                 return string.Empty;
             }
 
-            string text = Regex.Replace(htmlText, "<[^>]*>", string.Empty).Trim();
+            string text = HtmlTagRegex().Replace(htmlText, string.Empty).Trim();
 
             return text;
         }
@@ -306,5 +306,10 @@ namespace NotificationsBot.Handlers
         /// <param name="markdown"></param>
         /// <returns></returns>
         protected string FormatMarkdownToTelegram(string markdown) { return Markdown.Escape(markdown); }
+
+        [GeneratedRegex("<[^>]*>")]
+        private static partial Regex HtmlTagRegex();
+        [GeneratedRegex("(?:__|[*#])|\\[(.*?)\\]\\(.*?\\)")]
+        private static partial Regex MKLinkRegex();
     }
 }
