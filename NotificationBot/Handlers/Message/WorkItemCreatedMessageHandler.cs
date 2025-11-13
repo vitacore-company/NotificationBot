@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,7 +15,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class WorkItemCreatedMessageHandler : BaseMessageHandler, IMessageHandler<WorkItemCreatedCustomPayload>
     {
-        public WorkItemCreatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
+        public WorkItemCreatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
@@ -34,15 +35,12 @@ namespace NotificationsBot.Handlers
                 HashSet<string> users = new HashSet<string>();
                 users.Add(resource.Resource.Fields.SystemAssignedTo.UniqueName);
 
-                List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
-                sb.Append("*Project*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTeamProject));
-                sb.AppendLine();
-                sb.Append("*Title*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTitle));
+                sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Fields.SystemWorkItemType} created by {resource.Resource.Fields.SystemCreatedBy?.DisplayName}"));
+                sb.AddProject(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTeamProject));
+                sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Fields.SystemTitle));
                 sb.AppendLine();
                 sb.Append("*State*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.SystemState));
@@ -50,19 +48,24 @@ namespace NotificationsBot.Handlers
                 sb.Append("*Priority*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Fields.MicrosoftVSTSCommonPriority));
                 sb.AppendLine();
+                if (!string.IsNullOrEmpty(GetTextFromHtml(resource.Resource.Fields.SystemDescription)))
+                {
+                    sb.Append("*Description*: ");
+                    sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.SystemDescription)));
+                    sb.AppendLine();
+                }
                 sb.Append("*Assigned to*: ");
                 sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.Fields.SystemAssignedTo.DisplayName));
                 sb.AppendLine();
 
                 sb.Replace($"{resource.Resource.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Fields.SystemTeamProject, itemId, resource.Resource.Fields.SystemWorkItemType));
 
-                string message = sb.ToString();
+                sb.AppendLine();
+                sb.AppendLine(FormatMarkdownToTelegram($"#{resource.Resource.Fields.SystemTeamProject.Replace('.', '_').Replace("(agile)", "")} #WorkItemCreate"));
 
-                if (chatIds.Count > 0)
-                {
-                    _logger.LogInformation($"Рабочий элемент {matchItemId} создан, сообщение отправлено {chatIds.First()}");
-                    _ = _botClient.SendMessage(chatIds.First(), message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-                }
+                _logger.LogInformation($"Рабочий элемент {matchItemId} создан, сообщение отправлено {string.Join(',', chatIds)}");
+
+                SendMessages(sb, chatIds);
             }
         }
     }

@@ -2,8 +2,8 @@
 using Microsoft.Extensions.Options;
 using NotificationsBot.Handlers;
 using NotificationsBot.Interfaces;
+using NotificationsBot.Interfaces.TelegramCallback;
 using NotificationsBot.Services;
-using NotificationsBot.Services.Background;
 using NotificationsBot.Services.Background.Polling;
 using System.Reflection;
 using Telegram.Bot;
@@ -35,12 +35,16 @@ public static class ServiceExtension
         services.AddScoped<IExistUserChecker, ExistUserChecker>();
         services.AddScoped<IUserHolder, UserHolderService>();
         services.AddScoped<INotificationTypesService, NotificationTypesService>();
-        services.AddHostedService<BackgroundUserService>();
         services.AddHostedService<PollingService>();
         services.RegisterHandler();
         services.AddMessageHandlers(Assembly.GetExecutingAssembly());
         services.AddScoped<IHandlerFactory, HandlerFactory>();
         services.AddTransient<ExceptionMiddleware>();
+        services.AddMemoryCache();
+        services.AddScoped<ICommandService, CommandService>();
+        services.AddScoped<ICallbackQueryService, CallbackQueryService>();
+        services.AddScoped<INotificationCacheService, NotificationCacheService>();
+        services.AddScoped<ICacheService, CacheService>();
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>
@@ -80,7 +84,7 @@ public static class ServiceExtension
         }
 #endif
         hostApplicationBuilder.Services.AddImplInterfaces(hostApplicationBuilder.Configuration);
-
+        
         hostApplicationBuilder.Services.AddControllers()
             .AddXmlSerializerFormatters();
 
@@ -119,6 +123,7 @@ public static class ServiceExtension
         }
 
         webApplication.UseMiddleware<ExceptionMiddleware>();
+        webApplication.UseMiddleware<DomainWhitelistMiddleware>();
 
         return webApplication;
     }

@@ -20,6 +20,21 @@ namespace NotificationsBot.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("NotificationTypesProjects", b =>
+                {
+                    b.Property<int>("NotificationTypesId")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("ProjectsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("NotificationTypesId", "ProjectsId");
+
+                    b.HasIndex("ProjectsId");
+
+                    b.ToTable("NotificationTypesProjects");
+                });
+
             modelBuilder.Entity("NotificationsBot.Models.Database.NotificationTypes", b =>
                 {
                     b.Property<int>("Id")
@@ -38,7 +53,7 @@ namespace NotificationsBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("NotificationTypes", (string)null);
+                    b.ToTable("NotificationTypes");
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.NotificationsOnProjectChat", b =>
@@ -59,7 +74,7 @@ namespace NotificationsBot.Migrations
 
                     b.HasIndex("ProjectId");
 
-                    b.ToTable("NotificationsOnProjectChat", (string)null);
+                    b.ToTable("NotificationsOnProjectChat");
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.Projects", b =>
@@ -76,7 +91,27 @@ namespace NotificationsBot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
+                });
+
+            modelBuilder.Entity("NotificationsBot.Models.Database.Topic", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer");
+
+                    b.Property<long>("ChatId")
+                        .HasColumnType("bigint");
+
+                    b.Property<int?>("ProjectsId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id", "ChatId");
+
+                    b.HasIndex("ChatId");
+
+                    b.HasIndex("ProjectsId");
+
+                    b.ToTable("Topics");
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.User", b =>
@@ -98,7 +133,22 @@ namespace NotificationsBot.Migrations
 
                     b.HasKey("ChatId");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("NotificationTypesProjects", b =>
+                {
+                    b.HasOne("NotificationsBot.Models.Database.NotificationTypes", null)
+                        .WithMany()
+                        .HasForeignKey("NotificationTypesId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NotificationsBot.Models.Database.Projects", null)
+                        .WithMany()
+                        .HasForeignKey("ProjectsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("NotificationsBot.Models.Database.NotificationsOnProjectChat", b =>
@@ -126,6 +176,29 @@ namespace NotificationsBot.Migrations
                     b.Navigation("Project");
 
                     b.Navigation("Users");
+                });
+
+            modelBuilder.Entity("NotificationsBot.Models.Database.Topic", b =>
+                {
+                    b.HasOne("NotificationsBot.Models.Database.User", null)
+                        .WithMany("Topics")
+                        .HasForeignKey("ChatId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("NotificationsBot.Models.Database.Projects", null)
+                        .WithMany("Topics")
+                        .HasForeignKey("ProjectsId");
+                });
+
+            modelBuilder.Entity("NotificationsBot.Models.Database.Projects", b =>
+                {
+                    b.Navigation("Topics");
+                });
+
+            modelBuilder.Entity("NotificationsBot.Models.Database.User", b =>
+                {
+                    b.Navigation("Topics");
                 });
 #pragma warning restore 612, 618
         }

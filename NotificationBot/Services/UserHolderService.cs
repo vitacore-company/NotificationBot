@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Memory;
 using NotificationsBot.Interfaces;
 using NotificationsBot.Models.Database;
 using NotificationsBot.Models.Locals;
-using System.Collections.Concurrent;
 
 namespace NotificationsBot.Services
 {
@@ -10,16 +10,13 @@ namespace NotificationsBot.Services
     {
         private readonly AppContext _context;
         private readonly IExistUserChecker _userChecker;
+        private readonly IMemoryCache _memoryCache;
 
-        public UserHolderService(AppContext context, IExistUserChecker userChecker)
+        public UserHolderService(AppContext context, IExistUserChecker userChecker, IMemoryCache memoryCache)
         {
             _context = context;
             _userChecker = userChecker;
-        }
-
-        public void Clear()
-        {
-            Interlocked.CompareExchange(ref LocalUsers.Users, new ConcurrentDictionary<string, UserInfo>(), LocalUsers.Users);
+            _memoryCache = memoryCache;
         }
 
         public async Task<List<long>> GetChatIdsByLogin(List<string> login)
@@ -28,7 +25,7 @@ namespace NotificationsBot.Services
 
             foreach (string userLogin in login)
             {
-                if (!LocalUsers.Users.TryGetValue(userLogin, out UserInfo userInfo))
+                if (!_memoryCache.TryGetValue(userLogin, out UserInfo userInfo))
                 {
                     User? user = _context.Users.Where(x => x.Login != null && EF.Functions.ILike(x.Login, "%" + userLogin + "%")).FirstOrDefault();
 
@@ -40,7 +37,7 @@ namespace NotificationsBot.Services
                     bool userExists = await _userChecker.CheckExistUser(user.UserId);
                     userInfo = new UserInfo(user.ChatId, userExists);
 
-                    LocalUsers.Users.TryAdd(userLogin, userInfo);
+                    _memoryCache.Set(userLogin, userInfo, new MemoryCacheEntryOptions() { AbsoluteExpirationRelativeToNow = TimeSpan.FromHours(10) });
                 }
 
                 if (userInfo.Available)
