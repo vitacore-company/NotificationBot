@@ -26,6 +26,7 @@
 
   notificationbot:
     container_name: notificationbot-app
+    restart: unless-stopped
     image: ${DOCKER_REGISTRY}/notificationbot:${TAG}
     ports:
       - ${HTTPS_PORT}:8080
