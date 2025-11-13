@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Models.AzureModels.PullRequestComment;
 using NotificationsBot.Utils;
 using System.Text;
@@ -14,7 +15,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class PullRequestCommentMessageHandler : BaseMessageHandler, IMessageHandler<PullRequestCommentedPayload>
     {
-        public PullRequestCommentMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
+        public PullRequestCommentMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
@@ -26,33 +27,28 @@ namespace NotificationsBot.Handlers
             string author = resource.Resource.comment.author.uniqueName;
 
             users.RemoveWhere(x => x.Contains(author.Substring(0, author.IndexOf('@'))));
-            List<long> chatIds = await FilteredByNotifyUsers(
+            Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(
                 resource.EventType,
                 resource.Resource.pullRequest.Repository.Project.Name,
                 await _userHolder.GetChatIdsByLogin(users.ToList()));
 
             StringBuilder sb = new StringBuilder();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Message.Text));
-            sb.Append("*Project*: ");
-            sb.Append(Utilites.ProjectLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name));
-            sb.AppendLine();
-            sb.Append("*Title*: ");
-            sb.Append(FormatMarkdownToTelegram(resource.Resource.pullRequest.Title));
-            sb.AppendLine();
-            sb.Append("*Description*: ");
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.pullRequest.Description));
-            sb.AppendLine();
-            sb.AppendLine(FormatMarkdownToTelegram(resource.Resource.comment.content));
 
-            sb.Replace("pull request", Utilites.PullRequestLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name, resource.Resource.pullRequest.PullRequestId, "pull request"));
+            sb.AddMainInfo($"{FormatMarkdownToTelegram(resource.Resource.comment.author.displayName)} {GetLinkFromMarkdown(resource.DetailedMessage.Markdown)} pull request");
+            sb.AddProject(Utilites.ProjectLinkConfigure(resource.Resource.pullRequest.Repository.Project.Name, resource.Resource.pullRequest.Repository.Name));
+            sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.pullRequest.Title));
+
+            sb.AddDescription(FormatMarkdownToTelegram(resource.Resource.pullRequest.Description));
+            sb.AppendLine();
+            sb.AppendLine($"`{FormatMarkdownToTelegram(resource.Resource.comment.content)}`");
+
+            sb.AddTags(resource.Resource.pullRequest.Repository.Project.Name, "PullRequestComment");
 
             string message = sb.ToString();
 
-            foreach (long chatId in chatIds)
-            {
-                _logger.LogInformation($"Запрос на вытягивание {resource.Resource.pullRequest.PullRequestId} прокомментирован, сообщение отправлено {string.Join(',', chatIds)}");
-                _ =_botClient.SendMessage(chatId, message, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-            }
+            _logger.LogInformation($"Запрос на вытягивание {resource.Resource.pullRequest.PullRequestId} прокомментирован, сообщение отправлено {string.Join(',', chatIds)}");
+
+            SendMessages(sb, chatIds);
         }
     }
 }

@@ -1,4 +1,5 @@
-﻿using NotificationsBot.Interfaces;
+﻿using NotificationsBot.Extensions;
+using NotificationsBot.Interfaces;
 using NotificationsBot.Utils;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -14,7 +15,7 @@ namespace NotificationsBot.Handlers
     /// </summary>
     public class WorkItemUpdatedMessageHandler : BaseMessageHandler, IMessageHandler<WorkItemUpdatedCustomPayload>
     {
-        public WorkItemUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger) : base(context, botClient, userHolder, logger)
+        public WorkItemUpdatedMessageHandler(AppContext context, ITelegramBotClient botClient, IUserHolder userHolder, ILogger<BaseMessageHandler> logger, ICacheService cacheService) : base(context, botClient, userHolder, logger, cacheService)
         {
         }
 
@@ -24,7 +25,9 @@ namespace NotificationsBot.Handlers
             {
                 return;
             }
-            if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null)
+            if (resource.Resource.Fields == null || resource.Resource.Fields.SystemAssignedTo == null 
+                && resource.Resource.Fields.MicrosoftVSTSCommonPriority == null
+                && resource.Resource.Fields.Description == null)
             {
                 return;
             }
@@ -41,12 +44,10 @@ namespace NotificationsBot.Handlers
                 HashSet<string> users = new HashSet<string>();
 
                 StringBuilder sb = new StringBuilder();
-                sb.AppendLine(FormatMarkdownToTelegram($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed"));
-                sb.Append("*Project*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTeamProject));
-                sb.AppendLine();
-                sb.Append("*Title*: ");
-                sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTitle));
+                sb.AddMainInfo(FormatMarkdownToTelegram($"{resource.Resource.Revision.Fields.SystemWorkItemType} was changed"));
+                sb.AddProject(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTeamProject));
+                sb.AddTitle(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemTitle));
+
                 sb.AppendLine();
                 sb.Append("*State*: ");
                 sb.Append(FormatMarkdownToTelegram(resource.Resource.Revision.Fields.SystemState));
@@ -76,19 +77,29 @@ namespace NotificationsBot.Handlers
                         users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
                     }
                 }
+                if (resource.Resource.Fields.Description != null)
+                {
+                    sb.Append("*Description*: ");
+                    sb.Append(FormatMarkdownToTelegram(GetTextFromHtml(resource.Resource.Fields.Description.NewValue)));
+                    sb.AppendLine();
+
+                    if (!users.Any())
+                    {
+                        users.Add(resource.Resource.Revision.Fields.SystemAssignedTo.UniqueName);
+                    }
+                }
 
                 string itemId = matchItemId.Groups[1].Value;
 
                 sb.Replace($"{resource.Resource.Revision.Fields.SystemWorkItemType}", Utilites.WorkItemLinkConfigure(resource.Resource.Revision.Fields.SystemTeamProject, itemId, resource.Resource.Revision.Fields.SystemWorkItemType));
-                string messageText = sb.ToString();
 
-                List<long> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+                sb.AddTags(resource.Resource.Revision.Fields.SystemTeamProject, "WorkItemUpdate");
 
-                if (chatIds.Count > 0)
-                {
-                    _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {chatIds.First()}");
-                    _ = _botClient.SendMessage(chatIds.First(), messageText, Telegram.Bot.Types.Enums.ParseMode.MarkdownV2);
-                }
+                Dictionary<long, int?> chatIds = await FilteredByNotifyUsers(resource.EventType, resource.Resource.Revision.Fields.SystemTeamProject, await _userHolder.GetChatIdsByLogin(users.ToList()));
+
+                _logger.LogInformation($"Рабочий элемент {matchItemId} измененен, сообщение отправлено {string.Join(',', chatIds)}");
+
+                SendMessages(sb, chatIds);
             }
         }
     }

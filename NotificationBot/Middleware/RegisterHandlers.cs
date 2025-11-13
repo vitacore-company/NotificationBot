@@ -13,6 +13,7 @@ namespace NotificationsBot.Middleware
             LocalMessageHandlers.Handlers.TryAdd("workitem.created", typeof(WorkItemCreatedMessageHandler));
             LocalMessageHandlers.Handlers.TryAdd("workitem.updated", typeof(WorkItemUpdatedMessageHandler));
             LocalMessageHandlers.Handlers.TryAdd("build.complete", typeof(BuildStateChangedMessageHandler));
+            LocalMessageHandlers.Handlers.TryAdd("ms.vss-release.deployment-completed-event", typeof(DeploymentUpdatedMessageHandler));
         }
     }
 }

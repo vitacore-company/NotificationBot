@@ -50,5 +50,26 @@ namespace NotificationsBot.Utils
 
             return link;
         }
+
+        public static string DeploymentLinkConfigure(string project, int releaseId, int envId, string _stage)
+        {
+            string configLink = Markdown.Escape($"https://tfs.dev.vitacore.ru/tfs/{project}/_releaseProgress?_a=release-environment-logs&releaseId={releaseId}&environmentId={envId}");
+            string stage = Markdown.Escape(_stage);
+
+            string link = $"[{stage}]({configLink})";
+
+            return link;
+        }
+
+        public static string BuildLinkConfigure(string buildDefinition, string project, int buildId)
+        {
+            string configLink = Markdown.Escape($"https://tfs.dev.vitacore.ru/tfs/{project}/_build/results?buildId={buildId}&view=results");
+
+            string stage = Markdown.Escape(buildDefinition);
+
+            string link = $"[{stage}]({configLink})";
+
+            return link;
+        }
     }
 }

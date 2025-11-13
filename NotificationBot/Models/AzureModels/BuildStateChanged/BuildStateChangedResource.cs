@@ -17,6 +17,10 @@ namespace NotificationsBot.Models.AzureModels.BuildStateChanged
         [AllowNull]
         [JsonProperty("project")]
         public GitProject Project { get; set; }
+
+        [AllowNull]
+        [JsonProperty("result")]
+        public string Result { get; set; }
     }
 
     public class BuildStateChangedCustomPayload : BasePayload<BuildStateChangedResource>
