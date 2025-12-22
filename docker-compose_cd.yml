@@ -2,6 +2,7 @@
   postgresql:
     container_name: notificationbot-postgres
     image: postgres:16
+    restart: unless-stopped
     expose:
       - ${POSTGRES_EXPOSE_PORT}
     ports:
