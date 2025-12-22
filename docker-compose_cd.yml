@@ -1,7 +1,8 @@
 ﻿services:
   postgresql:
     container_name: notificationbot-postgres
-    image: postgres:16
+    image: postgres:16.11
+    restart: unless-stopped
     expose:
       - ${POSTGRES_EXPOSE_PORT}
     ports:
