@@ -33,8 +33,8 @@
 			<IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 		</PackageReference>
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
-		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="19.225.1" />
-		<PackageReference Include="Microsoft.VisualStudio.Services.ServiceHooks.WebApi" Version="19.225.1" />
+		<PackageReference Include="Microsoft.VisualStudio.Services.Client" Version="19.225.2" />
+		<PackageReference Include="Microsoft.VisualStudio.Services.ServiceHooks.WebApi" Version="19.225.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
 		<PackageReference Include="NSwag.ApiDescription.Client" Version="14.6.2">
