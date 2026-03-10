@@ -6,14 +6,19 @@ namespace NotificationsBot.Utils
 {
     public static class Utilites
     {
-        public static async Task<T> ToObject<T>(this HttpResponseMessage response)
+        static Utilites()
         {
-            string responseAsString = await response.Content.ReadAsStringAsync();
-            T? responseObject = JsonSerializer.Deserialize<T>(responseAsString, new JsonSerializerOptions
+            DefaultJsonSerializerOptions = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true,
                 ReferenceHandler = ReferenceHandler.Preserve
-            });
+            };
+        }
+
+        public static async Task<T> ToObject<T>(this HttpResponseMessage response)
+        {
+            string responseAsString = await response.Content.ReadAsStringAsync();
+            T? responseObject = JsonSerializer.Deserialize<T>(responseAsString, DefaultJsonSerializerOptions);
             if (responseObject != null)
             {
                 return responseObject;
@@ -71,5 +76,7 @@ namespace NotificationsBot.Utils
 
             return link;
         }
+
+        public static readonly JsonSerializerOptions DefaultJsonSerializerOptions;
     }
 }

@@ -30,7 +30,7 @@ namespace NotificationsBot.Services
             string cacheKey = $"notifications_{chatId}_{project}";
 
             List<string> userNotifys = await _cacheService.GetOrCreateAsync(cacheKey, async () =>
-                await getNotificationsFromDb(chatId, project), new List<string>() { $"notifications_{project}" }, TimeSpan.FromMinutes(5));
+                await getNotificationsFromDb(chatId, project), [$"notifications_{project}"], TimeSpan.FromMinutes(5));
 
             return userNotifys ?? [];
         }
@@ -71,8 +71,8 @@ namespace NotificationsBot.Services
 
             var result = await query.ToListAsync();
 
-            return result.Select(x =>
-                (x.IsEnabled ? "✅ " : "❌ ") + x.EventDescription).ToList();
+            return [.. result.Select(x =>
+                (x.IsEnabled ? "✅ " : "❌ ") + x.EventDescription)];
         }
 
         /// <summary>
@@ -96,7 +96,7 @@ namespace NotificationsBot.Services
         {
             string key = $"{eventType}_{project}";
 
-            _cacheService.InvalidateDependencies(new List<string>() { key });
+            _cacheService.InvalidateDependencies([key]);
         }
 
         /// <summary>

@@ -70,7 +70,7 @@ namespace NotificationsBot.Handlers
                     sb.AppendLine();
                     sb.AppendLine(FormatMarkdownToTelegram($"#{resource.resource.project.name.Replace('.', '_').Replace("(agile)", "")} #Deploy"));
 
-                    _logger.LogInformation($"Деплой запущен, сообщение отправлено {string.Join(',', chatIds)}");
+                    _logger.LogInformation("Деплой запущен, сообщение отправлено {chatIds}", string.Join(',', chatIds));
 
                     SendMessages(sb, chatIds);
                 }

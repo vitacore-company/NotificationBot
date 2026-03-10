@@ -46,7 +46,7 @@ namespace NotificationsBot.Handlers
 
             string message = sb.ToString();
 
-            _logger.LogInformation($"Запрос на вытягивание {resource.Resource.pullRequest.PullRequestId} прокомментирован, сообщение отправлено {string.Join(',', chatIds)}");
+            _logger.LogInformation("Запрос на вытягивание {PullRequestId} прокомментирован, сообщение отправлено {chatIds}", resource.Resource.pullRequest.PullRequestId, string.Join(',', chatIds));
 
             SendMessages(sb, chatIds);
         }

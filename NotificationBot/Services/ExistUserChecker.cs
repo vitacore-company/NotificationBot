@@ -15,11 +15,9 @@ namespace NotificationsBot.Services
             {
                 return false;
             }
-            using (HttpClient client = new HttpClient())
-            {
-                CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", client);
-                return  await openapiClient.GetAsync(userId);
-            }
+            using HttpClient client = new HttpClient();
+            CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", client);
+            return await openapiClient.GetAsync(userId);
         }
     }
 }

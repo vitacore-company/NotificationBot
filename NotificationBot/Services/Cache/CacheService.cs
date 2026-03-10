@@ -55,7 +55,7 @@ namespace NotificationsBot.Services
             {
                 foreach (string dependency in dependencies)
                 {
-                    _dependencies.AddOrUpdate(dependency, new List<string> { key },
+                    _dependencies.AddOrUpdate(dependency, [key],
                         (_, list) =>
                         {
                             list.Add(key);

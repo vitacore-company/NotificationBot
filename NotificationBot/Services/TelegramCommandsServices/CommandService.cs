@@ -35,7 +35,7 @@ namespace NotificationsBot.Services
         /// <returns></returns>
         public async Task HandleStartCommand(Message msg)
         {
-            _logger.LogInformation($"Вызвана команда {msg.Text} пользователем {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username}");
+            _logger.LogInformation("Вызвана команда {Text} пользователем {FirstName}{LastName}, имя пользователя {Username}", msg.Text, msg.Chat.FirstName, msg.Chat.LastName, msg.Chat.Username);
 
             switch (msg.Chat.Type)
             {
@@ -197,7 +197,7 @@ namespace NotificationsBot.Services
                             await _botClient.SendMessage(msg.Chat, "Вы успешно авторизировались");
                             await _usersDataService.CancelStatus(msg.Chat.Id);
 
-                            _logger.LogInformation($"Пользователь {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username} зарегестрирован");
+                            _logger.LogInformation("Пользователь {FirstName}{LastName}, имя пользователя {Username} зарегестрирован", msg.Chat.FirstName, msg.Chat.LastName, msg.Chat.Username);
 
                             await sendBaseInformation(msg, null);
                         }
@@ -206,7 +206,7 @@ namespace NotificationsBot.Services
 
                 case "/changeLogin":
                     {
-                        _logger.LogInformation($"Пользователь {msg.Chat.FirstName}{msg.Chat.LastName}, имя пользователя {msg.Chat.Username} изменил логин");
+                        _logger.LogInformation("Пользователь {FirstName}{LastName}, имя пользователя {Username} изменил логин", msg.Chat.FirstName, msg.Chat.LastName, msg.Chat.Username);
                         await _usersDataService.UpdateUser(msg.Text, msg.Chat.Id, msg.From?.Id ?? -1);
                         await _botClient.SendMessage(msg.Chat, "Логин изменен");
                         await _usersDataService.CancelStatus(msg.Chat.Id);
