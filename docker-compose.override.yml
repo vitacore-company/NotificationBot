@@ -2,6 +2,7 @@
   notificationsbot:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
     ports:
       - "8080"
       - "8081"
