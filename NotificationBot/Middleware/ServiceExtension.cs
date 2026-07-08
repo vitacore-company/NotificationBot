@@ -122,8 +122,13 @@ public static class ServiceExtension
             }
         }
 
-        webApplication.UseMiddleware<ExceptionMiddleware>();
-        webApplication.UseMiddleware<DomainWhitelistMiddleware>();
+        bool? whitelistOverride = webApplication.Configuration.GetValue<bool?>("EnableDomainWhitelist");
+        bool enableWhitelist = whitelistOverride ?? !webApplication.Environment.IsDevelopment();
+
+        if (enableWhitelist)
+        {
+            webApplication.UseMiddleware<DomainWhitelistMiddleware>();
+        }
 
         return webApplication;
     }
