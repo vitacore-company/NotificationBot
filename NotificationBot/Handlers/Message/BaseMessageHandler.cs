@@ -209,28 +209,25 @@ namespace NotificationsBot.Handlers
             }
 
             string message = sb.ToString();
-            List<Task> sendTasks = new List<Task>();
 
             foreach ((long chatId, int? threadId) in chats)
             {
-                sendTasks.Add(
-                    _botClient.SendMessage(
+                // Отправляем и забываем про неё, отработает само, если нет, придет на ошибку —
+                // но теперь каждая отправка обрабатывается отдельно, чтобы не терять chatId при ошибке.
+                _ = _botClient.SendMessage(
                         chatId,
                         message,
                         Telegram.Bot.Types.Enums.ParseMode.MarkdownV2,
-                        messageThreadId: threadId > 0 ? threadId : null));
-            }
-
-            // Отправляем и забываем про него, отработает само, если нет, придет на ошибку
-            _ = Task.WhenAll(sendTasks)
-                .ContinueWith(
-                    t =>
-                    {
-                        if (t.IsFaulted)
+                        messageThreadId: threadId > 0 ? threadId : null)
+                    .ContinueWith(
+                        t =>
                         {
-                            _logger.LogError(t.Exception, "Ошибка отправки сообщения");
-                        }
-                    });
+                            if (t.IsFaulted)
+                            {
+                                _logger.LogError(t.Exception, "Ошибка отправки сообщения в чат {ChatId}", chatId);
+                            }
+                        });
+            }
         }
 
         /// <summary>
