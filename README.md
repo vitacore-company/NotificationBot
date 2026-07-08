@@ -17,6 +17,8 @@
 - PGADMIN_DEFAULT_PASSWORD
 - PGADMIN_LISTEN_PORT
 - PGADMIN_PORTS
+- EnableDomainWhitelist
+- EnableExistUserCheck
 
 1.А Или отредактировать файл .env
 
