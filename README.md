@@ -25,3 +25,10 @@
 - ```docker compose up``` (Запуск)
 
 ГОТОВО 
+
+1. Получить токен TGBot в BotFather (@BotFather в телеграм)
+2. Вставить токен в NotificationBot/appsettings.Development.json
+3. Выполнить ```docker compose up --build -d```
+
+
+Переменные окружения хранятся в .env и NotificationBot/appsettings.Development.json

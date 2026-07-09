@@ -54,7 +54,8 @@ public static class ServiceExtension
 
                 if (string.IsNullOrEmpty(options.Token))
                 {
-                    options.Token = configurationManager.GetValue<string>("BotToken");
+                    
+                    options.Token = configurationManager.GetValue<string>("BotClientOptions:Token");
                 }
 
                 TelegramBotClientOptions ctorOptions = new Telegram.Bot.TelegramBotClientOptions(options.Token ?? "", options?.BaseUrl, options?.UseTestEnvironment ?? false)
