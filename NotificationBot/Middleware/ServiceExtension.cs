@@ -45,6 +45,7 @@ public static class ServiceExtension
         services.AddScoped<ICallbackQueryService, CallbackQueryService>();
         services.AddScoped<INotificationCacheService, NotificationCacheService>();
         services.AddScoped<ICacheService, CacheService>();
+        services.AddSingleton(new HttpClient { Timeout = TimeSpan.FromSeconds(5) });
 
         services.AddHttpClient("telegram_bot_client")
             .AddTypedClient<ITelegramBotClient>((httpClient, sp) =>

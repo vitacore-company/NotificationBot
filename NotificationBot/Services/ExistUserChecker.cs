@@ -5,10 +5,12 @@ namespace NotificationsBot.Services
     public class ExistUserChecker : IExistUserChecker
     {
         private readonly IConfiguration _configuration;
+        private readonly HttpClient _client;
 
-        public ExistUserChecker(IConfiguration configuration)
+        public ExistUserChecker(IConfiguration configuration, HttpClient client)
         {
             _configuration = configuration;
+            _client = client;
         }
 
         /// <summary>
@@ -29,8 +31,7 @@ namespace NotificationsBot.Services
                 return true;
             }
 #endif
-            using HttpClient client = new HttpClient();
-            CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", client);
+            CheckerUser openapiClient = new CheckerUser("http://192.168.20.127:9898", _client);
             return await openapiClient.GetAsync(userId);
         }
     }
