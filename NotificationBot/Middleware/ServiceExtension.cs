@@ -123,6 +123,9 @@ public static class ServiceExtension
             }
         }
 
+        webApplication.UseMiddleware<ExceptionMiddleware>();
+
+#if DEBUG
         bool? whitelistOverride = webApplication.Configuration.GetValue<bool?>("EnableDomainWhitelist");
         bool enableWhitelist = whitelistOverride ?? !webApplication.Environment.IsDevelopment();
 
@@ -130,7 +133,9 @@ public static class ServiceExtension
         {
             webApplication.UseMiddleware<DomainWhitelistMiddleware>();
         }
-
+#else
+        webApplication.UseMiddleware<DomainWhitelistMiddleware>();
+#endif
         return webApplication;
     }
 }
